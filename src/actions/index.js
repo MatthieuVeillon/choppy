@@ -1,4 +1,5 @@
 import { database } from "../firebase/index";
+import uuid from "uuid/v4";
 
 /*
 action types
@@ -47,15 +48,25 @@ export const addIngredientsToShoppingListFailed = () => {
   };
 };
 
+const concatAllIngredientsIntoOneList = meal => {
+  const concatIngredients = {};
+  meal.ingredientsWithQuantityUpdated.map(ingredient => {
+    const ingredientIdentified = { [ingredient.ingredientId]: { ...ingredient, purchased: false } };
+    return Object.assign(concatIngredients, ingredientIdentified);
+  });
+  return concatIngredients;
+};
+
 export const addIngredientsToShoppingList = (meal, navigateToHome) => {
-  console.log("meal in reducer", meal);
-  let key = database.ref("/shoppingList").push().key;
+  let key = database.ref("/shoppingListRecipes").push().key;
   return dispatch => {
     dispatch(addIngredientsToShoppingListRequested());
     meal.id = key;
-    const shoppingListRef = database.ref("/shoppingList/" + key);
-    shoppingListRef
-      .set(meal)
+    const shoppingListRecipesRef = database.ref("shoppingList/shoppingListRecipes/" + key);
+    const shoppingListRef = database.ref("shoppingList/shoppingListItems/");
+    shoppingListRecipesRef
+      .update(meal)
+      .then(() => shoppingListRef.update(concatAllIngredientsIntoOneList(meal)))
       .then(() => dispatch(addIngredientsToShoppingListCompleted()))
       .then(() => navigateToHome())
       .catch(error => {
@@ -70,7 +81,7 @@ export const addRecipe = (recipe, navigateToHome) => {
   return dispatch => {
     dispatch(addRecipeRequested());
     recipe.recipeId = key;
-    recipe.ingredients.map(ingredient => (ingredient.ingredientId = ingredient.name + key));
+    recipe.ingredients.map(ingredient => (ingredient.ingredientId = uuid()));
     const recipesRef = database.ref("/recipes/" + key);
     recipesRef
       .set(recipe)
@@ -141,7 +152,6 @@ const getShoppingListRequested = () => ({ type: GET_SHOPPING_LIST_REQUESTED });
 const getShoppingListFailed = () => ({ type: GET_SHOPPING_LIST_FAILED });
 
 const getShoppingListSucceed = shoppingList => {
-  console.log("shoppingList Suceeded");
   return {
     type: GET_SHOPPING_LIST_SUCCEED,
     shoppingList,
@@ -150,16 +160,12 @@ const getShoppingListSucceed = shoppingList => {
 };
 
 export const getShoppingList = () => {
-  console.log("didmount");
   return dispatch => {
     dispatch(getShoppingListRequested());
     return database
       .ref(`/shoppingList`)
       .once("value")
-      .then(snapshot => {
-        console.log("shoppingList", snapshot.val());
-        return dispatch(getShoppingListSucceed(snapshot.val()));
-      })
+      .then(snapshot => dispatch(getShoppingListSucceed(snapshot.val())))
       .catch(error => {
         console.log(error);
         dispatch(getShoppingListFailed());

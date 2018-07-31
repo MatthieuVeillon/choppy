@@ -10,16 +10,16 @@ const ShoppingListBase = ({ shoppingList, onClickHandler }) => {
   return (
     <div>
       <ul>
-        {shoppingList.datafromRecipes.map(meal => (
+        {shoppingList.shoppingListRecipes.map(meal => (
           <li>
             {meal.title} {meal.portion}
           </li>
         ))}
       </ul>
       <ul>
-        {shoppingList.shoppingListAllIngredients.map((ingredient, index) => (
+        {shoppingList.shoppingListItems.map((ingredient, index) => (
           <li>
-            <div style={{ backgroundColor: "green" }} onClick={onClickHandler(index)}>
+            <div style={{ backgroundColor: "green" }} onClick={() => onClickHandler(ingredient.ingredientId)}>
               {" "}
               {ingredient.name} {ingredient.quantity} {ingredient.measure}
             </div>{" "}
@@ -39,17 +39,13 @@ export const ShoppingList = compose(
     }
   }),
   connect(state => ({ shoppingList: state.shoppingList })),
-  withState("checkedItems", "updateCheckedItems", []),
   withHandlers({
-    onClickHandler: ({ updateCheckedItems, checkedItems }) => index => {
-      const newChecked = [...checkedItems];
-      return _.includes(checkedItems, index) ? newChecked.push(index) : _.remove(newChecked, item => item === index);
+    onClickHandler: ({}) => ingredientID => {
+      return console.log(ingredientID);
     }
   }),
-  branch(({ shoppingList }) => !shoppingList.shoppingListAllIngredients, renderNothing)
+  branch(({ shoppingList }) => !shoppingList.shoppingListItems, renderNothing)
 )(ShoppingListBase);
-
-const groceryItem = styled.li``;
 
 // Objectifs de la page shoppingList
 

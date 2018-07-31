@@ -7,12 +7,6 @@ import {
   GET_SHOPPING_LIST_FAILED
 } from "../actions";
 
-export const concatAllIngredientsIntoOneList = shoppingList => {
-  const concatIngredients = [];
-  shoppingList.map(meal => meal.ingredientsWithQuantityUpdated.map(ingredient => concatIngredients.push(ingredient)));
-  return concatIngredients;
-};
-
 export const shoppingList = (state = [], action) => {
   switch (action.type) {
     case ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED:
@@ -48,18 +42,16 @@ export const shoppingList = (state = [], action) => {
         error: "Error in getting recipes"
       };
     case GET_SHOPPING_LIST_SUCCEED:
-      const shoppingListRecipesArray = Object.keys(action.shoppingList).map(k => action.shoppingList[k]);
-      const shoppingListAllIngredients = concatAllIngredientsIntoOneList(shoppingListRecipesArray);
-
-      let newState = {
+      return {
         ...state,
-        datafromRecipes: shoppingListRecipesArray,
-        shoppingListAllIngredients: shoppingListAllIngredients,
+        shoppingListItems: Object.keys(action.shoppingList.shoppingListItems).map(item => action.shoppingList.shoppingListItems[item]),
+        shoppingListRecipes: Object.keys(action.shoppingList.shoppingListRecipes).map(
+          item => action.shoppingList.shoppingListRecipes[item]
+        ),
         lastUpdated: action.receivedAt,
         inProgress: false,
-        success: "Got recipes"
+        success: "Got shoppingList"
       };
-      return newState;
     default:
       return state;
   }

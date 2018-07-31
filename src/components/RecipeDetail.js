@@ -1,8 +1,6 @@
-import React from "react";
 import { connect } from "react-redux";
 import _ from "lodash";
-import {RecipeDetailCard} from "./RecipeDetailCard";
-
+import { RecipeDetailCard } from "./RecipeDetailCard";
 
 const mapStateToProps = (state, ownProps) => {
   return {

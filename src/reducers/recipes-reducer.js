@@ -42,14 +42,13 @@ export const recipes = (state = [], action) => {
         error: "Error in getting recipes"
       };
     case GET_RECIPES_SUCCESS:
-      let newState = {
+      return {
         ...state,
         recipes: Object.keys(action.recipes).map(k => action.recipes[k]),
         lastUpdated: action.receivedAt,
         inProgress: false,
         success: "Got recipes"
       };
-      return newState;
     default:
       return state;
   }
