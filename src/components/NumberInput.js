@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 
-export const NumberInput = ({ onChange, name, value }) => (
+export const NumberInput = ({ onChange, placeholder, name, value }) => (
   <div>
     <label>
       <StyledInput
@@ -11,7 +11,7 @@ export const NumberInput = ({ onChange, name, value }) => (
         value={value}
         onChange={onChange}
         required
-        placeholder={name}
+        placeholder={placeholder}
       />
     </label>
   </div>
@@ -24,7 +24,6 @@ NumberInput.propTypes = {
 };
 
 const StyledInput = styled.input`
-  width: 20px
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;

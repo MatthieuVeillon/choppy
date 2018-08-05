@@ -132,11 +132,12 @@ class AddRecipeForm extends Component {
           Add Step
         </button>
 
-        <NumberInput onChange={this.handleChange} name="cookingTime" value={cookingTime} />
-        <NumberInput onChange={this.handleChange} name="pricePerPortion" value={pricePerPortion} />
+        <NumberInput onChange={this.handleChange} name="cookingTime" placeholder="cooking time in min" value={cookingTime} />
+        <NumberInput onChange={this.handleChange} name="pricePerPortion" placeholder="price per portion"value={pricePerPortion} />
         <NumberInput
           onChange={this.handleChange}
           name="defaultPortionNumber"
+          placeholder="number of portion"
           value={defaultPortionNumber}
         />
 

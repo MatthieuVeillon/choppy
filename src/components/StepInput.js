@@ -20,8 +20,6 @@ export const StepInput = ({ step, index, handleChangeInDynamicElement, handleRem
 
 const FlexContainer = styled.div`
   display: flex;
-  width: 100%
-  justify-content: space-around;
   align-items: center;
 `;
 
