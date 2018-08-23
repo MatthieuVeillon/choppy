@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "../App.css";
-import VisibleRecipeList from "../containers/VisibleRecipeList";
 import { NavLink, Route } from "react-router-dom";
 import AddRecipeForm from "../containers/AddRecipeForm";
 import styled from "styled-components";
@@ -9,6 +8,7 @@ import { getRecipes } from "../actions";
 import Header from "./header";
 import RecipeDetail from "./RecipeDetail";
 import { ShoppingList } from "./ShoppingList";
+import {VisibleRecipeList} from "./RecipeList";
 
 class App extends Component {
   componentDidMount() {

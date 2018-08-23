@@ -2,18 +2,14 @@ import React from "react";
 import styled from "styled-components";
 import "./IngredientInput.css";
 
-export const IngredientInput = ({
-  ingredient,
-  index,
-  handleChangeInDynamicElement,
-  handleRemoveItem,
-}) => (
+export const IngredientInput = ({ ingredient, index, handleChangeInDynamicElement, handleRemoveItem }) => (
   <FlexContainer>
     <StyledInputText
       placeholder={`Ingredient ${index + 1}`}
       type="text"
       onChange={event => handleChangeInDynamicElement(event, index, "name", "ingredients")}
       value={ingredient.name}
+      required
     />
     <StyledInputNumber
       placeholder={`qty`}
@@ -21,11 +17,13 @@ export const IngredientInput = ({
       onChange={event => handleChangeInDynamicElement(event, index, "quantity", "ingredients")}
       value={ingredient.quantity}
       min={1}
+      required
     />
     <select
       style={selectStyle}
       value={ingredient.measure}
       onChange={event => handleChangeInDynamicElement(event, index, "measure", "ingredients")}
+      required
     >
       <option value="g" defaultValue>
         g

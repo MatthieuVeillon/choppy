@@ -1,11 +1,7 @@
 import { database } from "../firebase/index";
 import uuid from "uuid/v4";
 
-/*
-action types
- */
-
-//Add recipe
+//Recipes
 export const ADD_RECIPE_REQUESTED = "ADD_RECIPE_REQUESTED";
 export const ADD_RECIPE_FAILED = "ADD_RECIPE_FAILED";
 export const ADD_RECIPE_SUCCEED = "ADD_RECIPE_SUCCEED";
@@ -13,11 +9,15 @@ export const SET_CATEGORY_FILTER = "SET_CATEGORY_FILTER";
 export const GET_RECIPES_REQUESTED = "GET_RECIPES_REQUESTED";
 export const GET_RECIPES_FAILED = "GET_RECIPES_FAILED";
 export const GET_RECIPES_SUCCESS = "GET_RECIPES_SUCCESS";
+
+//CategoryFilter
 export const CategoryFilter = {
   SHOW_ALL: "SHOW_ALL",
   SHOW_VEGAN: "SHOW_VEGAN",
   SHOW_HEALTHY: "SHOW_HEALTHY"
 };
+
+//ShoppingList Creation
 export const ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED = "ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED";
 export const ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED = "ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED";
 export const ADD_INGREDIENTS_SHOPPING_LIST_FAILED = "ADD_INGREDIENTS_SHOPPING_LIST_FAILED";
@@ -25,9 +25,45 @@ export const GET_SHOPPING_LIST_SUCCEED = "GET_SHOPPING_LIST_SUCCEED";
 export const GET_SHOPPING_LIST_REQUESTED = "GET_SHOPPING_LIST_REQUESTED";
 export const GET_SHOPPING_LIST_FAILED = "GET_SHOPPING_LIST_FAILED";
 
+//ShoppingList Interaction
+export const SELECT_SHOPPING_LIST_ITEM_STARTED = "SELECT_SHOPPING_LIST_ITEM_STARTED";
+export const SELECT_SHOPPING_LIST_ITEM_FINISHED = "SELECT_SHOPPING_LIST_ITEM_FINISHED";
+export const SELECT_SHOPPING_LIST_ITEM_FAILED = "SELECT_SHOPPING_LIST_ITEM_FAILED";
+
+export const REMOVE_SHOPPING_LIST_ITEM_STARTED = "REMOVE_SHOPPING_LIST_ITEM_STARTED";
+export const REMOVE_SHOPPING_LIST_ITEM_FINISHED = "REMOVE_SHOPPING_LIST_ITEM_FINISHED";
+export const REMOVE_SHOPPING_LIST_ITEM_FAILED = "REMOVE_SHOPPING_LIST_ITEM_FAILED";
+
+//TODO  implement the get selected item status instead of asking for the whole shoppinglist each time we update the pruchase status
+// export const GET_SELECTED_ITEM_STATUS_STARTED = "GET_SELECTED_ITEM_STATUS_STARTED";
+// export const GET_SELECTED_ITEM_STATUS_FINISHED = "GET_SELECTED_ITEM_STATUS_FINISHED";
+// export const GET_SELECTED_ITEM_STATUS_FAILED = "GET_SELECTED_ITEM_STATUS_FAILED";
+
 /*
 Action creator
  */
+export const selectShoppingListItemFinished = () => ({ type: SELECT_SHOPPING_LIST_ITEM_FINISHED });
+export const selectShoppingListItemStarted = () => ({ type: SELECT_SHOPPING_LIST_ITEM_STARTED });
+export const selectShoppingListItemFailed = () => ({ type: SELECT_SHOPPING_LIST_ITEM_FAILED });
+
+export const removeShoppingListItemStarted = () => ({ type: REMOVE_SHOPPING_LIST_ITEM_STARTED });
+export const removeShoppingListItemFinished = () => ({ type: REMOVE_SHOPPING_LIST_ITEM_FINISHED });
+export const removeShoppingListItemFailed = () => ({ type: REMOVE_SHOPPING_LIST_ITEM_FAILED });
+
+export const removeShoppingListItem = ingredientID => {
+  const shoppingListItemRef = database.ref(`shoppingList/shoppingListItems/`);
+  return dispatch => {
+    dispatch(removeShoppingListItemStarted());
+    shoppingListItemRef
+      .update({ [ingredientID]: null })
+      .then(() => dispatch(removeShoppingListItemFinished()))
+      .then(() => dispatch(getShoppingList()))
+      .catch(error => {
+        console.log(error);
+        return dispatch(removeShoppingListItemFailed());
+      });
+  };
+};
 
 export const addIngredientsToShoppingListCompleted = ingredients => {
   return {
@@ -36,17 +72,8 @@ export const addIngredientsToShoppingListCompleted = ingredients => {
   };
 };
 
-export const addIngredientsToShoppingListRequested = () => {
-  return {
-    type: ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED
-  };
-};
-
-export const addIngredientsToShoppingListFailed = () => {
-  return {
-    type: ADD_INGREDIENTS_SHOPPING_LIST_FAILED
-  };
-};
+export const addIngredientsToShoppingListRequested = () => ({ type: ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED });
+export const addIngredientsToShoppingListFailed = () => ({ type: ADD_INGREDIENTS_SHOPPING_LIST_FAILED });
 
 const concatAllIngredientsIntoOneList = meal => {
   const concatIngredients = {};
@@ -55,6 +82,21 @@ const concatAllIngredientsIntoOneList = meal => {
     return Object.assign(concatIngredients, ingredientIdentified);
   });
   return concatIngredients;
+};
+
+export const selectShoppingListItem = (ingredientID, isPurchased) => {
+  const shoppingListItemRef = database.ref(`shoppingList/shoppingListItems/${ingredientID}/`);
+  return dispatch => {
+    dispatch(selectShoppingListItemStarted());
+    shoppingListItemRef
+      .update({ purchased: !isPurchased })
+      .then(() => dispatch(selectShoppingListItemFinished()))
+      .then(() => dispatch(getShoppingList()))
+      .catch(error => {
+        console.log(error);
+        return dispatch(selectShoppingListItemFailed());
+      });
+  };
 };
 
 export const addIngredientsToShoppingList = (meal, navigateToHome) => {
@@ -91,38 +133,15 @@ export const addRecipe = (recipe, navigateToHome) => {
   };
 };
 
-function addRecipeRequested() {
-  return {
-    type: ADD_RECIPE_REQUESTED
-  };
-}
-
-function addRecipeFailed() {
-  return {
-    type: ADD_RECIPE_FAILED
-  };
-}
-
-function addRecipeSucess() {
-  return {
-    type: ADD_RECIPE_SUCCEED
-  };
-}
+const addRecipeRequested = () => ({ type: ADD_RECIPE_REQUESTED });
+const addRecipeFailed = () => ({ type: ADD_RECIPE_FAILED });
+const addRecipeSucess = () => ({ type: ADD_RECIPE_SUCCEED });
 
 export function setCategoryFilter(category) {
   return { type: SET_CATEGORY_FILTER, category };
 }
-
-function getRecipesRequested() {
-  return {
-    type: GET_RECIPES_REQUESTED
-  };
-}
-function getRecipesFailed() {
-  return {
-    type: GET_RECIPES_FAILED
-  };
-}
+const getRecipesRequested = () => ({ type: GET_RECIPES_REQUESTED });
+const getRecipesFailed = () => ({ type: GET_RECIPES_FAILED });
 
 function getRecipesSuccess(recipes) {
   return {

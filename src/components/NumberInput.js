@@ -5,14 +5,7 @@ import styled from "styled-components";
 export const NumberInput = ({ onChange, placeholder, name, value }) => (
   <div>
     <label>
-      <StyledInput
-        type="number"
-        id={name}
-        value={value}
-        onChange={onChange}
-        required
-        placeholder={placeholder}
-      />
+      <StyledInput type="number" id={name} value={value} onChange={onChange} required placeholder={placeholder} />
     </label>
   </div>
 );

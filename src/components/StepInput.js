@@ -8,6 +8,7 @@ export const StepInput = ({ step, index, handleChangeInDynamicElement, handleRem
       placeholder={`Step ${index + 1}`}
       onChange={event => handleChangeInDynamicElement(event, index, "name", "cookingSteps")}
       value={step.name}
+      required
     />
 
     {index !== 0 && (

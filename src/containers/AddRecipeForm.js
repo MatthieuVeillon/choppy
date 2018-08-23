@@ -132,8 +132,18 @@ class AddRecipeForm extends Component {
           Add Step
         </button>
 
-        <NumberInput onChange={this.handleChange} name="cookingTime" placeholder="cooking time in min" value={cookingTime} />
-        <NumberInput onChange={this.handleChange} name="pricePerPortion" placeholder="price per portion"value={pricePerPortion} />
+        <NumberInput
+          onChange={this.handleChange}
+          name="cookingTime"
+          placeholder="cooking time in min"
+          value={cookingTime}
+        />
+        <NumberInput
+          onChange={this.handleChange}
+          name="pricePerPortion"
+          placeholder="price per portion"
+          value={pricePerPortion}
+        />
         <NumberInput
           onChange={this.handleChange}
           name="defaultPortionNumber"
@@ -167,7 +177,10 @@ const mapDispatchToProps = dispatch => {
     addRecipe: (recipe, navigateToHome) => dispatch(addRecipe(recipe, navigateToHome))
   };
 };
-export default connect(null, mapDispatchToProps)(AddRecipeForm);
+export default connect(
+  null,
+  mapDispatchToProps
+)(AddRecipeForm);
 
 const Formflex = styled.form`
   border-radius: 5px;

@@ -34,7 +34,7 @@ const RecipeDetailIngredientList = ({ ingredients }) => (
     <ul>
       {ingredients.map(ingredient => {
         return (
-          <li>
+          <li key={ingredient.ingredientId}>
             <Typography variant="body2">
               {ingredient.quantity} {ingredient.measure} {ingredient.name}
             </Typography>
@@ -52,9 +52,9 @@ const RecipeDetailIngredientList = ({ ingredients }) => (
 const RecipeCookingSteps = ({ cookingSteps }) => (
   <RecipeDetailCardIngredientsContainer>
     <ul>
-      {cookingSteps.map(step => {
+      {cookingSteps.map((step,index) => {
         return (
-          <li>
+          <li key={index}>
             <Typography paragraph>{step.name}</Typography>
           </li>
         );

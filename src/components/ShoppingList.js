@@ -1,32 +1,43 @@
 import React from "react";
-import { branch, compose, lifecycle, renderNothing, withHandlers, withState } from "recompose";
-import {} from "../actions";
+import { branch, compose, lifecycle, renderNothing, withHandlers } from "recompose";
 import { connect } from "react-redux";
+import { getShoppingList, removeShoppingListItem, selectShoppingListItem } from "../actions";
 import styled from "styled-components";
-import _ from "lodash";
-import { getShoppingList } from "../actions";
 
-const ShoppingListBase = ({ shoppingList, onClickHandler }) => {
+export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }) => {
+  return (
+    <FlexWrapper>
+      <ShoppingListItemBox
+        isPurchased={ingredient.purchased}
+        onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}
+      >
+        {ingredient.name} {ingredient.quantity} {ingredient.measure}
+      </ShoppingListItemBox>
+      <button onClick={() => onRemoveHandler(ingredient.ingredientId)}> - </button>
+    </FlexWrapper>
+  );
+};
+
+export const ShoppingListRecipe = ({ meal }) => (
+  <FlexWrapper>
+    <li key={meal.id}>
+      {meal.title} - {meal.portion} portions
+    </li>
+    <button>-</button>
+  </FlexWrapper>
+);
+
+const ShoppingListBase = ({ shoppingList, onClickHandler, onRemoveHandler }) => {
   return (
     <div>
       <ul>
         {shoppingList.shoppingListRecipes.map(meal => (
-          <li>
-            {meal.title} {meal.portion}
-          </li>
+          <ShoppingListRecipe meal={meal} />
         ))}
       </ul>
-      <ul>
-        {shoppingList.shoppingListItems.map((ingredient, index) => (
-          <li>
-            <div style={{ backgroundColor: "green" }} onClick={() => onClickHandler(ingredient.ingredientId)}>
-              {" "}
-              {ingredient.name} {ingredient.quantity} {ingredient.measure}
-            </div>{" "}
-            <button>remove item</button>
-          </li>
-        ))}
-      </ul>
+      {shoppingList.shoppingListItems.map(ingredient => (
+        <ShoppingListItem ingredient={ingredient} onClickHandler={onClickHandler} onRemoveHandler={onRemoveHandler} />
+      ))}
     </div>
   );
 };
@@ -40,12 +51,31 @@ export const ShoppingList = compose(
   }),
   connect(state => ({ shoppingList: state.shoppingList })),
   withHandlers({
-    onClickHandler: ({}) => ingredientID => {
-      return console.log(ingredientID);
-    }
+    onClickHandler: ({ dispatch }) => (ingredientID, isPurchased) =>
+      dispatch(selectShoppingListItem(ingredientID, isPurchased)),
+    onRemoveHandler: ({ dispatch }) => ingredientID => dispatch(removeShoppingListItem(ingredientID))
   }),
   branch(({ shoppingList }) => !shoppingList.shoppingListItems, renderNothing)
 )(ShoppingListBase);
+
+const ShoppingListItemBox = styled.div`
+  display: flex;
+  background-color: AliceBlue;
+  width: 300px;
+  height: 40px;
+  margin-bottom: 1px;
+  align-items: center;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  text-decoration: ${({ isPurchased }) => (isPurchased ? "line-through" : "none")};
+`;
+
+const FlexWrapper = styled.div`
+  display: flex;
+`;
 
 // Objectifs de la page shoppingList
 
