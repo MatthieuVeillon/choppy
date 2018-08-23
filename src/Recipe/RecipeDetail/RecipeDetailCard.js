@@ -1,12 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import _ from "lodash";
 import { branch, compose, renderNothing, withHandlers, withProps, withState } from "recompose";
-import { FlexDivColumn } from "./CssComponents";
+import { FlexDivColumn } from "../../CssComponents";
 import { Button, TextField, Typography } from "material-ui";
 import { withStyles } from "material-ui/styles";
 import { connect } from "react-redux";
-import { addIngredientsToShoppingList } from "../actions";
 import { withRouter } from "react-router-dom";
+import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppingList-reducer";
 
 //########################################################
 //                 RecipeDetailCardHeader
@@ -52,7 +53,7 @@ const RecipeDetailIngredientList = ({ ingredients }) => (
 const RecipeCookingSteps = ({ cookingSteps }) => (
   <RecipeDetailCardIngredientsContainer>
     <ul>
-      {cookingSteps.map((step,index) => {
+      {cookingSteps.map((step, index) => {
         return (
           <li key={index}>
             <Typography paragraph>{step.name}</Typography>
@@ -66,13 +67,7 @@ const RecipeCookingSteps = ({ cookingSteps }) => (
 //########################################################
 //                 AddToShoppingListForm
 //########################################################
-export const AddToShoppingListFormBase = ({
-  handleSubmit,
-  portion,
-  onChangeHandler,
-  ingredients,
-  defaultPortionNumber
-}) => (
+export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandler, ingredients, defaultPortionNumber }) => (
   <form onSubmit={handleSubmit}>
     <TextField
       required
@@ -85,12 +80,8 @@ export const AddToShoppingListFormBase = ({
         shrink: true
       }}
       margin="normal"
-    />;
-    <AddToShoppingListButton
-      portion={portion}
-      ingredients={ingredients}
-      defaultPortionNumber={defaultPortionNumber}
     />
+    ;<AddToShoppingListButton portion={portion} ingredients={ingredients} defaultPortionNumber={defaultPortionNumber} />
   </form>
 );
 
@@ -176,11 +167,7 @@ const RecipeDetailCardBase = ({
     <div>
       <HeaderImage src={uploadImageUrl} />
     </div>
-    <RecipeDetailCardHeader
-      canBeFrozen={canBeFrozen}
-      cookingTime={cookingTime}
-      pricePerPortion={pricePerPortion}
-    />
+    <RecipeDetailCardHeader canBeFrozen={canBeFrozen} cookingTime={cookingTime} pricePerPortion={pricePerPortion} />
     <RecipeDetailCardBody>
       <div>
         <Typography variant="display1">{title}</Typography>
@@ -191,16 +178,14 @@ const RecipeDetailCardBase = ({
       </div>
       <RecipeCookingSteps cookingSteps={cookingSteps} />
     </RecipeDetailCardBody>
-    <AddToShoppingListForm
-      defaultPortionNumber={defaultPortionNumber}
-      ingredients={ingredients}
-      title={title}
-      recipeId={recipeId}
-    />
+    <AddToShoppingListForm defaultPortionNumber={defaultPortionNumber} ingredients={ingredients} title={title} recipeId={recipeId} />
   </RecipeDetailCardContainer>
 );
 
 export const RecipeDetailCard = compose(
+  connect((state, ownProps) => ({
+    recipeDisplayed: _.find(state.recipes.recipes, ["recipeId", ownProps.match.params.recipeId])
+  })),
   branch(({ recipeDisplayed }) => !recipeDisplayed, renderNothing)
 )(RecipeDetailCardBase);
 

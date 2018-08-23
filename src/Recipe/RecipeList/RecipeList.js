@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
-import { RecipeCard } from "./RecipeCard";
+import { RecipeCard } from "../RecipeCard/RecipeCard";
 import {connect} from "react-redux";
 
 export const RecipeList = ({ recipes }) =>

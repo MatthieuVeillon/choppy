@@ -1,5 +1,5 @@
 import React from "react";
-import CategoryFilter from "../containers/CategoryFilter";
+import CategoryFilter from "../CategoryFilter/CategoryFilter";
 
 const Header = () => (
   <p>

@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import "./IngredientInput.css";
+import "../IngredientInput.css";
 
 export const IngredientInput = ({ ingredient, index, handleChangeInDynamicElement, handleRemoveItem }) => (
   <FlexContainer>

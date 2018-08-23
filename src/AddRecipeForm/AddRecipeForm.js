@@ -1,14 +1,14 @@
 import React, { Component } from "react";
-import { TextInput } from "../components/TextInput";
-import { ImageInput } from "../components/ImageInput";
-import { CheckboxSlider } from "../components/CheckboxSlider";
+import { TextInput } from "../FormInput/TextInput";
+import { ImageInput } from "../FormInput/ImageInput";
+import { CheckboxSlider } from "../CheckboxSlider";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { addRecipe } from "../actions";
 import { storageRef } from "../firebase/index";
-import { IngredientInput } from "../components/IngredientInput";
-import { StepInput } from "../components/StepInput";
-import { NumberInput } from "../components/NumberInput";
+import { IngredientInput } from "../FormInput/IngredientInput";
+import { StepInput } from "../FormInput/StepInput";
+import { NumberInput } from "../FormInput/NumberInput";
+import {addRecipe} from "../Recipe/reducer/recipe-reducer";
 
 const initialState = {
   title: "",

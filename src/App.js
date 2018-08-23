@@ -1,14 +1,14 @@
 import React, { Component } from "react";
-import "../App.css";
+import "./App.css";
 import { NavLink, Route } from "react-router-dom";
-import AddRecipeForm from "../containers/AddRecipeForm";
+import AddRecipeForm from "./AddRecipeForm/AddRecipeForm";
 import styled from "styled-components";
 import { connect } from "react-redux";
-import { getRecipes } from "../actions";
-import Header from "./header";
-import RecipeDetail from "./RecipeDetail";
-import { ShoppingList } from "./ShoppingList";
-import {VisibleRecipeList} from "./RecipeList";
+import Header from "./Header/header";
+import { ShoppingList } from "./ShoppingList/ShoppingList";
+import { VisibleRecipeList } from "./Recipe/RecipeList/RecipeList";
+import { RecipeDetailCard } from "./Recipe/RecipeDetail/RecipeDetailCard";
+import { getRecipes } from "./Recipe/reducer/recipe-reducer";
 
 class App extends Component {
   componentDidMount() {
@@ -48,7 +48,7 @@ class App extends Component {
         />
         <Route path="/ShoppingList" component={ShoppingList} />
 
-        <Route path="/recipe/:recipeId" component={RecipeDetail} />
+        <Route path="/recipe/:recipeId" component={RecipeDetailCard} />
       </div>
     );
   }

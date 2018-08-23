@@ -1,16 +1,13 @@
 import React from "react";
 import { branch, compose, lifecycle, renderNothing, withHandlers } from "recompose";
 import { connect } from "react-redux";
-import { getShoppingList, removeShoppingListItem, selectShoppingListItem } from "../actions";
 import styled from "styled-components";
+import { getShoppingList, removeShoppingListItem, selectShoppingListItem } from "./reducer/shoppingList-reducer";
 
 export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }) => {
   return (
     <FlexWrapper>
-      <ShoppingListItemBox
-        isPurchased={ingredient.purchased}
-        onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}
-      >
+      <ShoppingListItemBox isPurchased={ingredient.purchased} onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}>
         {ingredient.name} {ingredient.quantity} {ingredient.measure}
       </ShoppingListItemBox>
       <button onClick={() => onRemoveHandler(ingredient.ingredientId)}> - </button>
@@ -51,8 +48,7 @@ export const ShoppingList = compose(
   }),
   connect(state => ({ shoppingList: state.shoppingList })),
   withHandlers({
-    onClickHandler: ({ dispatch }) => (ingredientID, isPurchased) =>
-      dispatch(selectShoppingListItem(ingredientID, isPurchased)),
+    onClickHandler: ({ dispatch }) => (ingredientID, isPurchased) => dispatch(selectShoppingListItem(ingredientID, isPurchased)),
     onRemoveHandler: ({ dispatch }) => ingredientID => dispatch(removeShoppingListItem(ingredientID))
   }),
   branch(({ shoppingList }) => !shoppingList.shoppingListItems, renderNothing)
