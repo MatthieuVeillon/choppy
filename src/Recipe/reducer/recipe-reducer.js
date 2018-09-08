@@ -81,7 +81,10 @@ export const addRecipe = (recipe, navigateToHome) => {
   return dispatch => {
     dispatch(addRecipeRequested());
     recipe.recipeId = key;
-    recipe.ingredients.map(ingredient => (ingredient.ingredientId = uuid()));
+    recipe.ingredients.forEach(ingredient => {
+      ingredient.ingredientId = uuid();
+      ingredient.recipeId = key;
+    });
     const recipesRef = database.ref("/recipes/" + key);
     recipesRef
       .set(recipe)

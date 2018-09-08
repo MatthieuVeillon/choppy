@@ -1,4 +1,5 @@
 import { database } from "../../firebase/index";
+import _ from "lodash";
 
 //Actions
 export const ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED = "ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED";
@@ -17,6 +18,10 @@ export const REMOVE_SHOPPING_LIST_ITEM_STARTED = "REMOVE_SHOPPING_LIST_ITEM_STAR
 export const REMOVE_SHOPPING_LIST_ITEM_FAILED = "REMOVE_SHOPPING_LIST_ITEM_FAILED";
 export const REMOVE_SHOPPING_LIST_ITEM_FINISHED = "REMOVE_SHOPPING_LIST_ITEM_FINISHED";
 
+export const REMOVE_SHOPPING_LIST_RECIPE_STARTED = "REMOVE_SHOPPING_LIST_RECIPE_STARTED";
+export const REMOVE_SHOPPING_LIST_RECIPE_FAILED = "REMOVE_SHOPPING_LIST_RECIPE_FAILED";
+export const REMOVE_SHOPPING_LIST_RECIPE_FINISHED = "REMOVE_SHOPPING_LIST_RECIPE_FINISHED";
+
 // Action Creators
 export const selectShoppingListItemStarted = () => ({ type: SELECT_SHOPPING_LIST_ITEM_STARTED });
 export const selectShoppingListItemFailed = () => ({ type: SELECT_SHOPPING_LIST_ITEM_FAILED });
@@ -25,6 +30,10 @@ export const selectShoppingListItemFinished = () => ({ type: SELECT_SHOPPING_LIS
 export const removeShoppingListItemStarted = () => ({ type: REMOVE_SHOPPING_LIST_ITEM_STARTED });
 export const removeShoppingListItemFailed = () => ({ type: REMOVE_SHOPPING_LIST_ITEM_FAILED });
 export const removeShoppingListItemFinished = () => ({ type: REMOVE_SHOPPING_LIST_ITEM_FINISHED });
+
+export const removeShoppingListRecipeStarted = () => ({ type: REMOVE_SHOPPING_LIST_RECIPE_STARTED });
+export const removeShoppingListRecipeFailed = () => ({ type: REMOVE_SHOPPING_LIST_RECIPE_FAILED });
+export const removeShoppingListRecipeFinished = () => ({ type: REMOVE_SHOPPING_LIST_RECIPE_FINISHED });
 
 const getShoppingListRequested = () => ({ type: GET_SHOPPING_LIST_REQUESTED });
 const getShoppingListFailed = () => ({ type: GET_SHOPPING_LIST_FAILED });
@@ -86,10 +95,14 @@ export const shoppingList = (state = [], action) => {
     case GET_SHOPPING_LIST_SUCCEED:
       return {
         ...state,
-        shoppingListItems: Object.keys(action.shoppingList.shoppingListItems).map(item => action.shoppingList.shoppingListItems[item]),
-        shoppingListRecipes: Object.keys(action.shoppingList.shoppingListRecipes).map(
-          item => action.shoppingList.shoppingListRecipes[item]
-        ),
+        shoppingListItems:
+          action.shoppingList !== null
+            ? Object.keys(action.shoppingList.shoppingListItems).map(item => action.shoppingList.shoppingListItems[item])
+            : [],
+        shoppingListRecipes:
+          action.shoppingList !== null
+            ? Object.keys(action.shoppingList.shoppingListRecipes).map(item => action.shoppingList.shoppingListRecipes[item])
+            : [],
         lastUpdated: action.receivedAt,
         inProgress: false,
         success: "Got shoppingList"
@@ -100,6 +113,33 @@ export const shoppingList = (state = [], action) => {
 };
 
 // Side Effects
+export const filterIngredientsToRemove = (recipeId, shoppingListItems) =>
+  _.filter(shoppingListItems, ingredient => {
+    return ingredient.recipeId === recipeId;
+  });
+
+export const removeShoppingListRecipe = recipeId => {
+  const shoppingListRecipeRef = database.ref("shoppingList/shoppingListRecipes/");
+  const shoppingListItemsRef = database.ref("shoppingList/shoppingListItems");
+
+  return dispatch => {
+    dispatch(removeShoppingListRecipeStarted());
+    shoppingListRecipeRef
+      .update({ [recipeId]: null })
+      .then(() => shoppingListItemsRef.once("value"))
+      .then(snapshot => {
+        const shoppingListItemToRemove = filterIngredientsToRemove(recipeId, snapshot.val());
+        return Promise.all(shoppingListItemToRemove.map(ingredient => shoppingListItemsRef.child(ingredient.ingredientId).remove()));
+      })
+      .then(() => dispatch(removeShoppingListRecipeFinished()))
+      .then(() => dispatch(getShoppingList()))
+      .catch(error => {
+        console.log(error);
+        return dispatch(removeShoppingListRecipeFailed());
+      });
+  };
+};
+
 export const removeShoppingListItem = ingredientID => {
   const shoppingListItemRef = database.ref(`shoppingList/shoppingListItems/`);
   return dispatch => {
@@ -140,11 +180,9 @@ export const selectShoppingListItem = (ingredientID, isPurchased) => {
 };
 
 export const addIngredientsToShoppingList = (meal, navigateToHome) => {
-  let key = database.ref("/shoppingListRecipes").push().key;
   return dispatch => {
     dispatch(addIngredientsToShoppingListRequested());
-    meal.id = key;
-    const shoppingListRecipesRef = database.ref("shoppingList/shoppingListRecipes/" + key);
+    const shoppingListRecipesRef = database.ref("shoppingList/shoppingListRecipes/" + meal.recipeId);
     const shoppingListRef = database.ref("shoppingList/shoppingListItems/");
     shoppingListRecipesRef
       .update(meal)

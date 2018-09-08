@@ -108,19 +108,12 @@ export const AddToShoppingListForm = compose(
     meal.portion = Number(portion);
     meal.recipeId = recipeId;
     meal.title = title;
-    console.log("ici meal", meal);
     return { meal };
   }),
-  withProps(({ meal }) => {
-    console.log("in withProps", meal);
-    return {};
-  }),
-
   connect(),
   withRouter,
   withHandlers({
     handleSubmit: ({ meal, dispatch, history }) => event => {
-      console.log("mealInHandler", meal);
       event.preventDefault();
       return dispatch(addIngredientsToShoppingList(meal, () => history.push("/")));
     }

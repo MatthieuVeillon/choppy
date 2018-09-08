@@ -2,7 +2,7 @@ import React from "react";
 import { branch, compose, lifecycle, renderNothing, withHandlers } from "recompose";
 import { connect } from "react-redux";
 import styled from "styled-components";
-import { getShoppingList, removeShoppingListItem, selectShoppingListItem } from "./reducer/shoppingList-reducer";
+import { getShoppingList, removeShoppingListItem, removeShoppingListRecipe, selectShoppingListItem } from "./reducer/shoppingList-reducer";
 
 export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }) => {
   return (
@@ -15,25 +15,30 @@ export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }
   );
 };
 
-export const ShoppingListRecipe = ({ meal }) => (
+export const ShoppingListRecipe = ({ meal, onRemoveHandler }) => (
   <FlexWrapper>
     <li key={meal.id}>
       {meal.title} - {meal.portion} portions
     </li>
-    <button>-</button>
+    <button onClick={() => onRemoveHandler(meal.recipeId)}>-</button>
   </FlexWrapper>
 );
 
-const ShoppingListBase = ({ shoppingList, onClickHandler, onRemoveHandler }) => {
+const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngredientHandler, onRemoveRecipeHandler }) => {
   return (
     <div>
       <ul>
         {shoppingList.shoppingListRecipes.map(meal => (
-          <ShoppingListRecipe meal={meal} />
+          <ShoppingListRecipe index={meal.recipeId} meal={meal} onRemoveHandler={onRemoveRecipeHandler} />
         ))}
       </ul>
       {shoppingList.shoppingListItems.map(ingredient => (
-        <ShoppingListItem ingredient={ingredient} onClickHandler={onClickHandler} onRemoveHandler={onRemoveHandler} />
+        <ShoppingListItem
+          index={ingredient.ingredientId}
+          ingredient={ingredient}
+          onClickHandler={onClickIngredientHandler}
+          onRemoveHandler={onRemoveIngredientHandler}
+        />
       ))}
     </div>
   );
@@ -48,8 +53,9 @@ export const ShoppingList = compose(
   }),
   connect(state => ({ shoppingList: state.shoppingList })),
   withHandlers({
-    onClickHandler: ({ dispatch }) => (ingredientID, isPurchased) => dispatch(selectShoppingListItem(ingredientID, isPurchased)),
-    onRemoveHandler: ({ dispatch }) => ingredientID => dispatch(removeShoppingListItem(ingredientID))
+    onClickIngredientHandler: ({ dispatch }) => (ingredientID, isPurchased) => dispatch(selectShoppingListItem(ingredientID, isPurchased)),
+    onRemoveIngredientHandler: ({ dispatch }) => ingredientID => dispatch(removeShoppingListItem(ingredientID)),
+    onRemoveRecipeHandler: ({ dispatch }) => recipeId => dispatch(removeShoppingListRecipe(recipeId))
   }),
   branch(({ shoppingList }) => !shoppingList.shoppingListItems, renderNothing)
 )(ShoppingListBase);
