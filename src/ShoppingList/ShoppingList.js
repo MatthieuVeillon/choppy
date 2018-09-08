@@ -29,12 +29,12 @@ const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngr
     <div>
       <ul>
         {shoppingList.shoppingListRecipes.map(meal => (
-          <ShoppingListRecipe index={meal.recipeId} meal={meal} onRemoveHandler={onRemoveRecipeHandler} />
+          <ShoppingListRecipe key={meal.recipeId} meal={meal} onRemoveHandler={onRemoveRecipeHandler} />
         ))}
       </ul>
       {shoppingList.shoppingListItems.map(ingredient => (
         <ShoppingListItem
-          index={ingredient.ingredientId}
+          key={ingredient.ingredientId}
           ingredient={ingredient}
           onClickHandler={onClickIngredientHandler}
           onRemoveHandler={onRemoveIngredientHandler}
