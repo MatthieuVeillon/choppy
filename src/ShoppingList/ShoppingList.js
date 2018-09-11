@@ -2,16 +2,27 @@ import React from "react";
 import { branch, compose, lifecycle, renderNothing, withHandlers } from "recompose";
 import { connect } from "react-redux";
 import styled from "styled-components";
+import ClosedIcon from "@material-ui/icons/Close";
 import { getShoppingList, removeShoppingListItem, removeShoppingListRecipe, selectShoppingListItem } from "./reducer/shoppingList-reducer";
+import { Box } from "../BasicComponents/Box";
 
 export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }) => {
   return (
-    <FlexWrapper>
-      <ShoppingListItemBox isPurchased={ingredient.purchased} onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}>
+    <Box>
+      <ShoppingListItemWrapper
+        width={"300px"}
+        height={"40px"}
+        debug
+        alignItems
+        isPurchased={ingredient.purchased}
+        onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}
+      >
         {ingredient.name} {ingredient.quantity} {ingredient.measure}
-      </ShoppingListItemBox>
-      <button onClick={() => onRemoveHandler(ingredient.ingredientId)}> - </button>
-    </FlexWrapper>
+      </ShoppingListItemWrapper>
+      <Box alignItems onClick={() => onRemoveHandler(ingredient.ingredientId)}>
+        <ClosedIcon />
+      </Box>
+    </Box>
   );
 };
 
@@ -20,29 +31,29 @@ export const ShoppingListRecipe = ({ meal, onRemoveHandler }) => (
     <li key={meal.id}>
       {meal.title} - {meal.portion} portions
     </li>
-    <button onClick={() => onRemoveHandler(meal.recipeId)}>-</button>
+    <FlexWrapper onClick={() => onRemoveHandler(meal.recipeId)}>
+      <ClosedIcon />
+    </FlexWrapper>
   </FlexWrapper>
 );
 
-const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngredientHandler, onRemoveRecipeHandler }) => {
-  return (
-    <div>
-      <ul>
-        {shoppingList.shoppingListRecipes.map(meal => (
-          <ShoppingListRecipe key={meal.recipeId} meal={meal} onRemoveHandler={onRemoveRecipeHandler} />
-        ))}
-      </ul>
-      {shoppingList.shoppingListItems.map(ingredient => (
-        <ShoppingListItem
-          key={ingredient.ingredientId}
-          ingredient={ingredient}
-          onClickHandler={onClickIngredientHandler}
-          onRemoveHandler={onRemoveIngredientHandler}
-        />
+const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngredientHandler, onRemoveRecipeHandler }) => (
+  <div>
+    <ul>
+      {shoppingList.shoppingListRecipes.map(meal => (
+        <ShoppingListRecipe key={meal.recipeId} meal={meal} onRemoveHandler={onRemoveRecipeHandler} />
       ))}
-    </div>
-  );
-};
+    </ul>
+    {shoppingList.shoppingListItems.map(ingredient => (
+      <ShoppingListItem
+        key={ingredient.ingredientId}
+        ingredient={ingredient}
+        onClickHandler={onClickIngredientHandler}
+        onRemoveHandler={onRemoveIngredientHandler}
+      />
+    ))}
+  </div>
+);
 
 export const ShoppingList = compose(
   connect(),
@@ -60,18 +71,13 @@ export const ShoppingList = compose(
   branch(({ shoppingList }) => !shoppingList.shoppingListItems, renderNothing)
 )(ShoppingListBase);
 
-const ShoppingListItemBox = styled.div`
+const ShoppingListItemWrapper = styled(Box)`
   display: flex;
   background-color: AliceBlue;
-  width: 300px;
-  height: 40px;
   margin-bottom: 1px;
-  align-items: center;
-
   &:hover {
     cursor: pointer;
   }
-
   text-decoration: ${({ isPurchased }) => (isPurchased ? "line-through" : "none")};
 `;
 
