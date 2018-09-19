@@ -1,84 +1,38 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { withStyles } from "material-ui/styles";
-import { Card, Icon, CardContent, CardMedia } from "material-ui";
-import Typography from "material-ui/Typography";
 import { compose, withHandlers } from "recompose";
 import { withRouter } from "react-router-dom";
-import styled from "styled-components";
+import { Box } from "../../BasicComponents/Box";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSnowflake } from "@fortawesome/free-solid-svg-icons";
+import { faClock } from "@fortawesome/free-regular-svg-icons";
 
-const styles = {
-  card: {
-    width: 180,
-    marginBottom: "20px"
-  },
-  media: {
-    height: 130
-  },
-  cardContent: {
-    height: 80,
-    padding: "10px"
-  },
-  cardTitle: {
-    marginTop: "-10px",
-    fontSize: "16px"
-  }
-};
-
-const recipeCard = ({
-  classes,
-  title,
-  uploadImageUrl,
-  recipeId,
-  canBeFrozen,
-  cookingTime,
-  pricePerPortion,
-  navigateTo
-}) => {
+const recipeCard = ({ title, uploadImageUrl, recipeId, canBeFrozen, cookingTime, pricePerPortion, navigateTo }) => {
   return (
-    <div onClick={navigateTo}>
-      <Card className={classes.card}>
-        <CardMedia className={classes.media} image={uploadImageUrl} title="Contemplative Reptile" />
-        <CardContent className={classes.cardContent}>
-          <Typography className={classes.cardTitle} variant="subheading" component="h2">
-            {title}
-          </Typography>
+    <Box onClick={navigateTo} vertical shadow margin={"5px"}>
+      <Box width={"200px"} height={"200px"}>
+        <img style={{ height: "100%", width: "100%", objectFit: "cover" }} src={uploadImageUrl} alt={{ title }} />
+      </Box>
+      <Box vertical>
+        <Box margin={"3px"} alignItems spaceAround style={{ fontWeight: "bold" }}>
+          {title}
+        </Box>
+        <Box margin={"3px"} spaceAround>
+          <Box alignItems>
+            <FontAwesomeIcon icon={faClock} />
+            {cookingTime} min
+          </Box>
+          <Box alignItems>{pricePerPortion} $</Box>
           {canBeFrozen && (
-            <FlexContainer>
-              <Icon style={{ fontSize: 14 }}>ac_unit</Icon>
-              <Typography style={{ fontSize: 12 }}>can be frozen</Typography>
-            </FlexContainer>
+            <Box alignItems>
+              <FontAwesomeIcon icon={faSnowflake} pull={"right"} />
+            </Box>
           )}
-
-          {cookingTime && (
-            <FlexContainer>
-              <Icon style={{ fontSize: 14 }}>timer</Icon>
-              <Typography style={{ fontSize: 12 }}>{cookingTime} min</Typography>
-            </FlexContainer>
-          )}
-
-          {pricePerPortion && (
-            <FlexContainer>
-              <Icon style={{ fontSize: 14 }}> attach_money</Icon>
-              <Typography style={{ fontSize: 12 }}>{pricePerPortion} / each</Typography>
-            </FlexContainer>
-          )}
-        </CardContent>
-        {/*<CardActions>*/}
-        {/*<Button size="small" color="primary">*/}
-        {/*<Link to={`/recipe/${recipeId}`}>Learn More</Link>*/}
-        {/*</Button>*/}
-        {/*</CardActions>*/}
-      </Card>
-    </div>
+        </Box>
+      </Box>
+      <Box />
+    </Box>
   );
-};
-
-recipeCard.propTypes = {
-  classes: PropTypes.object.isRequired,
-  match: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
-  history: PropTypes.object.isRequired
 };
 
 export const RecipeCard = compose(
@@ -88,9 +42,3 @@ export const RecipeCard = compose(
   }),
   withStyles(styles)
 )(recipeCard);
-
-const FlexContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
