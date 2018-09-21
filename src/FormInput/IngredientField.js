@@ -1,25 +1,29 @@
 import React from "react";
 import styled from "styled-components";
 import "../IngredientInput.css";
+import { Box, FormField, Select } from "../BasicComponents/Box";
 
-export const IngredientInput = ({ ingredient, index, handleChangeInDynamicElement, handleRemoveItem }) => (
-  <FlexContainer>
-    <StyledInputText
+export const IngredientField = ({ ingredient, index, handleChangeInDynamicElement, handleRemoveItem }) => (
+  <Box margin="10px 0px 5px 0px" width="250px">
+    <FormField
+      grow="1"
       placeholder={`Ingredient ${index + 1}`}
       type="text"
       onChange={event => handleChangeInDynamicElement(event, index, "name", "ingredients")}
       value={ingredient.name}
       required
     />
-    <StyledInputNumber
+    <FormField
+      grow="2"
       placeholder={`qty`}
+      width="20px"
       type="number"
       onChange={event => handleChangeInDynamicElement(event, index, "quantity", "ingredients")}
       value={ingredient.quantity}
       min={1}
       required
     />
-    <select
+    <Select
       style={selectStyle}
       value={ingredient.measure}
       onChange={event => handleChangeInDynamicElement(event, index, "measure", "ingredients")}
@@ -31,14 +35,14 @@ export const IngredientInput = ({ ingredient, index, handleChangeInDynamicElemen
       <option value="l">l</option>
       <option value="cup">cup</option>
       <option value="piece">piece</option>
-    </select>
+    </Select>
 
     {index !== 0 && (
       <button type="button" onClick={() => handleRemoveItem(index, "ingredients")}>
         -
       </button>
     )}
-  </FlexContainer>
+  </Box>
 );
 const selectStyle = {
   height: "39px"

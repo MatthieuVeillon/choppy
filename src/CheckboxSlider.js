@@ -1,12 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { Box, FormField } from "./BasicComponents/Box";
 
 export const CheckboxSlider = ({ name, onChange, value }) => (
-  <CheckBoxWrapper>
-    {name}
-    <input type="checkbox" value={value} onChange={onChange} id={name} />
-  </CheckBoxWrapper>
+  <Box spaceBetween alignItems>
+    <span> {name}</span> <FormField left="10px" type="checkbox" value={value} onChange={onChange} id={name} />
+  </Box>
 );
 
 CheckboxSlider.propTypes = {
@@ -15,7 +15,3 @@ CheckboxSlider.propTypes = {
   value: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired
 };
-
-const CheckBoxWrapper = styled.label`
-  margin-top: 10px;
-`;

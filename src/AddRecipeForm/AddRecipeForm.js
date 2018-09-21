@@ -1,14 +1,13 @@
 import React, { Component } from "react";
-import { TextInput } from "../FormInput/TextInput";
 import { ImageInput } from "../FormInput/ImageInput";
 import { CheckboxSlider } from "../CheckboxSlider";
 import styled from "styled-components";
 import { connect } from "react-redux";
 import { storageRef } from "../firebase/index";
-import { IngredientInput } from "../FormInput/IngredientInput";
-import { StepInput } from "../FormInput/StepInput";
-import { NumberInput } from "../FormInput/NumberInput";
-import {addRecipe} from "../Recipe/reducer/recipe-reducer";
+import { IngredientField } from "../FormInput/IngredientField";
+import { CookingStepField } from "../FormInput/CookingStepField";
+import { addRecipe } from "../Recipe/reducer/recipe-reducer";
+import { Box, Button, FormField } from "../BasicComponents/Box";
 
 const initialState = {
   title: "",
@@ -102,10 +101,10 @@ class AddRecipeForm extends Component {
 
     return (
       <Formflex onSubmit={this.handleSubmit}>
-        <TextInput name="title" onChange={this.handleChange} value={title} />
+        <FormField type="text" value={title} onChange={this.handleChange} id="title" placeholder={"title"} required width="250px" />
 
         {this.state.ingredients.map((ingredient, index) => (
-          <IngredientInput
+          <IngredientField
             key={index}
             ingredient={ingredient}
             index={index}
@@ -119,7 +118,7 @@ class AddRecipeForm extends Component {
         </button>
 
         {this.state.cookingSteps.map((step, index) => (
-          <StepInput
+          <CookingStepField
             key={index}
             step={step}
             index={index}
@@ -132,42 +131,49 @@ class AddRecipeForm extends Component {
           Add Step
         </button>
 
-        <NumberInput
-          onChange={this.handleChange}
-          name="cookingTime"
-          placeholder="cooking time in min"
+        <FormField
+          top="8px"
+          type="number"
           value={cookingTime}
-        />
-        <NumberInput
           onChange={this.handleChange}
-          name="pricePerPortion"
-          placeholder="price per portion"
+          id="cookingTime"
+          placeholder={"cooking time in min"}
+          required
+        />
+
+        <FormField
+          top="8px"
+          type="number"
           value={pricePerPortion}
-        />
-        <NumberInput
           onChange={this.handleChange}
-          name="defaultPortionNumber"
-          placeholder="number of portion"
-          value={defaultPortionNumber}
+          id="pricePerPortion"
+          placeholder={"price per portion"}
+          required
         />
 
-        <CheckboxSlider name="canBeFrozen" onChange={this.handleChange} value={canBeFrozen} />
+        <FormField
+          top="8px"
+          type="number"
+          value={pricePerPortion}
+          onChange={this.handleChange}
+          id="defaultPortionNumber"
+          placeholder="number of portion"
+          required
+        />
 
-        <CheckBoxWrapper>
-          <CheckboxSlider
-            name="Vegan"
-            onChange={event => this.handleChangeInNestedState(event, "categories", "vegan")}
-            value={vegan}
-          />
+        <Box top="8px" width="300px" spaceBetween>
+          <CheckboxSlider name="canBeFrozen" onChange={this.handleChange} value={canBeFrozen} />
+          <CheckboxSlider name="Vegan" onChange={event => this.handleChangeInNestedState(event, "categories", "vegan")} value={vegan} />
           <CheckboxSlider
             name="Healthy"
             onChange={event => this.handleChangeInNestedState(event, "categories", "healthy")}
             value={healthy}
           />
-        </CheckBoxWrapper>
-
+        </Box>
         <ImageInput name="picture: " onChange={this.handleFile} required />
-        <SubmitButton type="submit">SAVE</SubmitButton>
+        <Button primary type="submit" top="10px">
+          SUBMIT RECIPE
+        </Button>
       </Formflex>
     );
   }
@@ -183,26 +189,12 @@ export default connect(
 )(AddRecipeForm);
 
 const Formflex = styled.form`
-  border-radius: 5px;
-  background-color: #f2f2f2;
+width=100%;
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
-`;
-
-const SubmitButton = styled.button`
-  background-color: #4caf50;
-  border: none;
-  color: white;
-  padding: 5px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin-top: 10px;
-  cursor: pointer;
 `;
 
 const CheckBoxWrapper = styled.div`

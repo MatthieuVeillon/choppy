@@ -1,5 +1,4 @@
 import React from "react";
-import { withStyles } from "material-ui/styles";
 import { compose, withHandlers } from "recompose";
 import { withRouter } from "react-router-dom";
 import { Box } from "../../BasicComponents/Box";
@@ -9,17 +8,17 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 
 const recipeCard = ({ title, uploadImageUrl, recipeId, canBeFrozen, cookingTime, pricePerPortion, navigateTo }) => {
   return (
-    <Box onClick={navigateTo} vertical shadow margin={"5px"}>
-      <Box width={"200px"} height={"200px"}>
+    <Box onClick={navigateTo} vertical shadow margin="5px">
+      <Box width="200px" height="200px">
         <img style={{ height: "100%", width: "100%", objectFit: "cover" }} src={uploadImageUrl} alt={{ title }} />
       </Box>
-      <Box vertical>
+      <Box height="60px" top="10px" vertical>
         <Box margin={"3px"} alignItems spaceAround style={{ fontWeight: "bold" }}>
           {title}
         </Box>
-        <Box margin={"3px"} spaceAround>
+        <Box margin={"3px"} top="10px" spaceAround>
           <Box alignItems>
-            <FontAwesomeIcon icon={faClock} />
+            <FontAwesomeIcon icon={faClock} className={"fa-fw"} />
             {cookingTime} min
           </Box>
           <Box alignItems>{pricePerPortion} $</Box>
@@ -39,6 +38,5 @@ export const RecipeCard = compose(
   withRouter,
   withHandlers({
     navigateTo: ({ history, recipeId }) => () => history.push(`/recipe/${recipeId}`)
-  }),
-  withStyles(styles)
+  })
 )(recipeCard);
