@@ -12,10 +12,9 @@ export const Box = styled.div`
     width: ${props => (props.width ? props.width : "auto")}
     height: ${props => (props.height ? props.height : "auto")}
     border: ${props => (props.border || props.debug ? "1px solid black" : "none")}
-    margin-top: ${props => (props.top ? props.top : 0)}
-    margin-bottom: ${props => (props.bottom ? props.top : 0)}
     margin: ${props => (props.margin && !props.bottom && !props.top ? props.margin : 0)}
-
+    margin-top: ${props => (props.top ? props.top : 0)}
+    margin-bottom: ${props => (props.bottom ? props.bottom : 0)}
     box-shadow: ${props => (props.shadow ? "2px 2px 2px grey" : 0)} 
 `;
 

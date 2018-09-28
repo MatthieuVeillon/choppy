@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import { ImageInput } from "../FormInput/ImageInput";
 import { CheckboxSlider } from "../CheckboxSlider";
-import styled from "styled-components";
 import { connect } from "react-redux";
 import { storageRef } from "../firebase/index";
 import { IngredientField } from "../FormInput/IngredientField";
 import { CookingStepField } from "../FormInput/CookingStepField";
 import { addRecipe } from "../Recipe/reducer/recipe-reducer";
 import { Box, Button, FormField } from "../BasicComponents/Box";
+import { Form } from "../BasicComponents/Form";
 
 const initialState = {
   title: "",
@@ -100,7 +100,7 @@ class AddRecipeForm extends Component {
     } = this.state;
 
     return (
-      <Formflex onSubmit={this.handleSubmit}>
+      <Form onSubmit={this.handleSubmit}>
         <FormField type="text" value={title} onChange={this.handleChange} id="title" placeholder={"title"} required width="250px" />
 
         {this.state.ingredients.map((ingredient, index) => (
@@ -154,7 +154,7 @@ class AddRecipeForm extends Component {
         <FormField
           top="8px"
           type="number"
-          value={pricePerPortion}
+          value={defaultPortionNumber}
           onChange={this.handleChange}
           id="defaultPortionNumber"
           placeholder="number of portion"
@@ -174,7 +174,7 @@ class AddRecipeForm extends Component {
         <Button primary type="submit" top="10px">
           SUBMIT RECIPE
         </Button>
-      </Formflex>
+      </Form>
     );
   }
 }
@@ -187,17 +187,3 @@ export default connect(
   null,
   mapDispatchToProps
 )(AddRecipeForm);
-
-const Formflex = styled.form`
-width=100%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-start;
-`;
-
-const CheckBoxWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;

@@ -8,7 +8,7 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 
 const recipeCard = ({ title, uploadImageUrl, recipeId, canBeFrozen, cookingTime, pricePerPortion, navigateTo }) => {
   return (
-    <Box onClick={navigateTo} vertical shadow margin="5px">
+    <Box onClick={navigateTo} vertical shadow bottom="20px">
       <Box width="200px" height="200px">
         <img style={{ height: "100%", width: "100%", objectFit: "cover" }} src={uploadImageUrl} alt={{ title }} />
       </Box>

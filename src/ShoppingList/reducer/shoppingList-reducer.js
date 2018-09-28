@@ -6,6 +6,10 @@ export const ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED = "ADD_INGREDIENTS_SHOPPING
 export const ADD_INGREDIENTS_SHOPPING_LIST_FAILED = "ADD_INGREDIENTS_SHOPPING_LIST_FAILED";
 export const ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED = "ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED";
 
+export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED = "ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED";
+export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED = "ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED";
+export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED = "ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED";
+
 export const GET_SHOPPING_LIST_REQUESTED = "GET_SHOPPING_LIST_REQUESTED";
 export const GET_SHOPPING_LIST_FAILED = "GET_SHOPPING_LIST_FAILED";
 export const GET_SHOPPING_LIST_SUCCEED = "GET_SHOPPING_LIST_SUCCEED";
@@ -46,10 +50,21 @@ const getShoppingListSucceed = shoppingList => {
 };
 export const addIngredientsToShoppingListRequested = () => ({ type: ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED });
 export const addIngredientsToShoppingListFailed = () => ({ type: ADD_INGREDIENTS_SHOPPING_LIST_FAILED });
-export const addIngredientsToShoppingListCompleted = ingredients => {
+export const addIngredientsToShoppingListCompleted = ingredient => {
   return {
     type: ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED,
-    ingredients
+    ingredient
+  };
+};
+
+export const addCustomIngredientsToShoppingListRequested = () => ({
+  type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED
+});
+export const addCustomIngredientsToShoppingListFailed = () => ({ type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED });
+export const addCustomIngredientsToShoppingListCompleted = ingredient => {
+  return {
+    type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED,
+    ingredient
   };
 };
 
@@ -58,7 +73,15 @@ export const addIngredientsToShoppingListCompleted = ingredients => {
 // export const GET_SELECTED_ITEM_STATUS_FINISHED = "GET_SELECTED_ITEM_STATUS_FINISHED";
 // export const GET_SELECTED_ITEM_STATUS_FAILED = "GET_SELECTED_ITEM_STATUS_FAILED";
 
+export const customIngredient = (state, action) => {
+  switch (action.type) {
+    case ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED:
+      return state.concat([action.ingredient]);
+  }
+};
+
 export const shoppingList = (state = [], action) => {
+  console.log("state", state);
   switch (action.type) {
     case ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED:
       return {
@@ -78,6 +101,13 @@ export const shoppingList = (state = [], action) => {
         ...state,
         inProgress: false,
         success: "Added items to shopping List"
+      };
+    case ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED:
+      return {
+        ...state,
+        shoppingListItems: customIngredient(state.shoppingListItems, action),
+        inProgress: false,
+        success: "Added custom ingredient to shopping List in DB and in state"
       };
     case GET_SHOPPING_LIST_REQUESTED:
       return {
@@ -179,7 +209,22 @@ export const selectShoppingListItem = (ingredientID, isPurchased) => {
   };
 };
 
-export const addIngredientsToShoppingList = (meal, navigateToHome) => {
+export const addCustomIngredientsToShoppingList = (meal, navigateToShoppingList) => {
+  return dispatch => {
+    dispatch(addCustomIngredientsToShoppingListRequested());
+    const shoppingListRef = database.ref(`shoppingList/shoppingListItems/${meal.ingredientId}`);
+    shoppingListRef
+      .update(meal)
+      .then(() => dispatch(addCustomIngredientsToShoppingListCompleted(meal)))
+      .then(() => navigateToShoppingList())
+      .catch(error => {
+        console.log(error);
+        return dispatch(addCustomIngredientsToShoppingListFailed());
+      });
+  };
+};
+
+export const addIngredientsToShoppingList = (meal, navigateToShoppingList) => {
   return dispatch => {
     dispatch(addIngredientsToShoppingListRequested());
     const shoppingListRecipesRef = database.ref("shoppingList/shoppingListRecipes/" + meal.recipeId);
@@ -188,7 +233,7 @@ export const addIngredientsToShoppingList = (meal, navigateToHome) => {
       .update(meal)
       .then(() => shoppingListRef.update(concatAllIngredientsIntoOneList(meal)))
       .then(() => dispatch(addIngredientsToShoppingListCompleted()))
-      .then(() => navigateToHome())
+      .then(() => navigateToShoppingList())
       .catch(error => {
         console.log(error);
         return dispatch(addIngredientsToShoppingListFailed());

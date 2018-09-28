@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 import styled from "styled-components";
 import ClosedIcon from "@material-ui/icons/Close";
 import { getShoppingList, removeShoppingListItem, removeShoppingListRecipe, selectShoppingListItem } from "./reducer/shoppingList-reducer";
-import { Box } from "../BasicComponents/Box";
+import { Box, FormField } from "../BasicComponents/Box";
+import { AddCustomIngredient } from "./AddCustomIngredient";
 
 export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }) => {
   return (
@@ -12,8 +13,9 @@ export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }
       <ShoppingListItemWrapper
         width={"300px"}
         height={"40px"}
-        debug
         alignItems
+        shadow
+        border
         isPurchased={ingredient.purchased}
         onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}
       >
@@ -27,23 +29,25 @@ export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }
 };
 
 export const ShoppingListRecipe = ({ meal, onRemoveHandler }) => (
-  <FlexWrapper>
+  <Box>
     <li key={meal.id}>
       {meal.title} - {meal.portion} portions
     </li>
-    <FlexWrapper onClick={() => onRemoveHandler(meal.recipeId)}>
+    <Box onClick={() => onRemoveHandler(meal.recipeId)}>
       <ClosedIcon />
-    </FlexWrapper>
-  </FlexWrapper>
+    </Box>
+  </Box>
 );
 
 const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngredientHandler, onRemoveRecipeHandler }) => (
   <div>
+    <h4>Recipe</h4>
     <ul>
       {shoppingList.shoppingListRecipes.map(meal => (
         <ShoppingListRecipe key={meal.recipeId} meal={meal} onRemoveHandler={onRemoveRecipeHandler} />
       ))}
     </ul>
+    <h4>Ingredients from recipes</h4>
     {shoppingList.shoppingListItems.map(ingredient => (
       <ShoppingListItem
         key={ingredient.ingredientId}
@@ -52,6 +56,8 @@ const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngr
         onRemoveHandler={onRemoveIngredientHandler}
       />
     ))}
+    <h4> Custom ingredients </h4>
+    <AddCustomIngredient />
   </div>
 );
 
@@ -72,17 +78,11 @@ export const ShoppingList = compose(
 )(ShoppingListBase);
 
 const ShoppingListItemWrapper = styled(Box)`
-  display: flex;
-  background-color: AliceBlue;
-  margin-bottom: 1px;
+  margin-bottom: 3px;
   &:hover {
     cursor: pointer;
   }
   text-decoration: ${({ isPurchased }) => (isPurchased ? "line-through" : "none")};
-`;
-
-const FlexWrapper = styled.div`
-  display: flex;
 `;
 
 // Objectifs de la page shoppingList

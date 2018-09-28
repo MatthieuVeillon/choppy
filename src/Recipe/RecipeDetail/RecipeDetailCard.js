@@ -115,7 +115,7 @@ export const AddToShoppingListForm = compose(
   withHandlers({
     handleSubmit: ({ meal, dispatch, history }) => event => {
       event.preventDefault();
-      return dispatch(addIngredientsToShoppingList(meal, () => history.push("/")));
+      return dispatch(addIngredientsToShoppingList(meal, () => history.push("/ShoppingList")));
     }
   })
 )(AddToShoppingListFormBase);

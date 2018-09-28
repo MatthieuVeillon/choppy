@@ -4,7 +4,7 @@ import "../IngredientInput.css";
 import { Box, FormField, Select } from "../BasicComponents/Box";
 
 export const IngredientField = ({ ingredient, index, handleChangeInDynamicElement, handleRemoveItem }) => (
-  <Box margin="10px 0px 5px 0px" width="250px">
+  <Box top="10px" bottom="5px" width="250px">
     <FormField
       grow="1"
       placeholder={`Ingredient ${index + 1}`}
