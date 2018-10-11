@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components";
 import "../IngredientInput.css";
 import { Box, FormField, Select } from "../BasicComponents/Box";
 
@@ -47,25 +46,3 @@ export const IngredientField = ({ ingredient, index, handleChangeInDynamicElemen
 const selectStyle = {
   height: "39px"
 };
-
-const FlexContainer = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const StyledInputText = styled.input`
-  padding: 12px 20px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-`;
-
-const StyledInputNumber = styled.input`
-  width: 80px;
-  padding: 12px 20px;
-  margin: 8px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-`;

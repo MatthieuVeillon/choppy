@@ -1,30 +1,42 @@
 import React from "react";
 import { branch, compose, lifecycle, renderNothing, withHandlers } from "recompose";
+import _ from "lodash";
 import { connect } from "react-redux";
 import styled from "styled-components";
 import ClosedIcon from "@material-ui/icons/Close";
-import { getShoppingList, removeShoppingListItem, removeShoppingListRecipe, selectShoppingListItem } from "./reducer/shoppingList-reducer";
-import { Box, FormField } from "../BasicComponents/Box";
+import {
+  getShoppingList,
+  removeShoppingListItem,
+  removeShoppingListRecipe,
+  reOrderShoppingListItems,
+  selectShoppingListItem
+} from "./reducer/shoppingList-reducer";
+import { Box } from "../BasicComponents/Box";
 import { AddCustomIngredient } from "./AddCustomIngredient";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler }) => {
+export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler, index }) => {
   return (
-    <Box>
-      <ShoppingListItemWrapper
-        width={"300px"}
-        height={"40px"}
-        alignItems
-        shadow
-        border
-        isPurchased={ingredient.purchased}
-        onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}
-      >
-        {ingredient.name} {ingredient.quantity} {ingredient.measure}
-      </ShoppingListItemWrapper>
-      <Box alignItems onClick={() => onRemoveHandler(ingredient.ingredientId)}>
-        <ClosedIcon />
-      </Box>
-    </Box>
+    <Draggable draggableId={ingredient.ingredientId} index={index}>
+      {provided => (
+        <Box {...provided.draggableProps} {...provided.dragHandleProps} innerRef={provided.innerRef}>
+          <ShoppingListItemWrapper
+            width={"300px"}
+            height={"40px"}
+            alignItems
+            shadow
+            border
+            isPurchased={ingredient.purchased}
+            onClick={() => onClickHandler(ingredient.ingredientId, ingredient.purchased)}
+          >
+            {ingredient.name} {ingredient.quantity} {ingredient.measure}
+          </ShoppingListItemWrapper>
+          <Box alignItems onClick={() => onRemoveHandler(ingredient.ingredientId)}>
+            <ClosedIcon />
+          </Box>
+        </Box>
+      )}
+    </Draggable>
   );
 };
 
@@ -39,7 +51,7 @@ export const ShoppingListRecipe = ({ meal, onRemoveHandler }) => (
   </Box>
 );
 
-const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngredientHandler, onRemoveRecipeHandler }) => (
+const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngredientHandler, onRemoveRecipeHandler, onDragEnd }) => (
   <div>
     <h4>Recipe</h4>
     <ul>
@@ -48,31 +60,74 @@ const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngr
       ))}
     </ul>
     <h4>Ingredients from recipes</h4>
-    {shoppingList.shoppingListItems.map(ingredient => (
-      <ShoppingListItem
-        key={ingredient.ingredientId}
-        ingredient={ingredient}
-        onClickHandler={onClickIngredientHandler}
-        onRemoveHandler={onRemoveIngredientHandler}
-      />
-    ))}
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId={"recipeList-1"}>
+        {provided => (
+          <Box vertical innerRef={provided.innerRef} {...provided.droppableProps}>
+            {shoppingList.shoppingListItemsId.map((shoppingListItemsId, index) => {
+              const ingredient = shoppingList.shoppingListItems[shoppingListItemsId];
+              return (
+                <ShoppingListItem
+                  key={ingredient.ingredientId}
+                  ingredient={ingredient}
+                  onClickHandler={onClickIngredientHandler}
+                  onRemoveHandler={onRemoveIngredientHandler}
+                  index={index}
+                />
+              );
+            })}
+            {provided.placeholder}
+          </Box>
+        )}
+      </Droppable>
+    </DragDropContext>
     <h4> Custom ingredients </h4>
-    <AddCustomIngredient />
+    <AddCustomIngredient shoppingList={shoppingList}/>
   </div>
 );
+
+const onDragEnd = ({ dispatch, shoppingList }) => result => {
+  const { destination, source, draggableId } = result;
+
+  if (!destination) {
+    return;
+  }
+  if (destination.droppableId === source.droppableId && destination.index === source.index) {
+    return;
+  }
+  const newShoppingListItemsId = Array.from(shoppingList.shoppingListItemsId);
+  newShoppingListItemsId.splice(source.index, 1);
+  newShoppingListItemsId.splice(destination.index, 0, draggableId);
+
+  dispatch(reOrderShoppingListItems(newShoppingListItemsId));
+};
+
+const onRemoveIngredientHandler = ({ dispatch, shoppingList }) => ingredientID => {
+  const newShoppingListItemsId = shoppingList.shoppingListItemsId.filter(ingredient => ingredient !== ingredientID);
+  return dispatch(removeShoppingListItem(ingredientID, newShoppingListItemsId));
+};
+
+const onRemoveRecipeHandler = ({ dispatch, shoppingList }) => recipeId => {
+  const abc = _.pickBy(shoppingList.shoppingListItems, item => item.recipeId === recipeId);
+  const shoppingListItemsToRemove = Object.keys(abc);
+
+  const newShoppingListItemsId = shoppingList.shoppingListItemsId.filter(ingredientId => !shoppingListItemsToRemove.includes(ingredientId));
+  return dispatch(removeShoppingListRecipe(recipeId, newShoppingListItemsId));
+};
 
 export const ShoppingList = compose(
   connect(),
   lifecycle({
     componentDidMount() {
-      return this.props.dispatch(getShoppingList());
+      this.props.dispatch(getShoppingList());
     }
   }),
   connect(state => ({ shoppingList: state.shoppingList })),
   withHandlers({
     onClickIngredientHandler: ({ dispatch }) => (ingredientID, isPurchased) => dispatch(selectShoppingListItem(ingredientID, isPurchased)),
-    onRemoveIngredientHandler: ({ dispatch }) => ingredientID => dispatch(removeShoppingListItem(ingredientID)),
-    onRemoveRecipeHandler: ({ dispatch }) => recipeId => dispatch(removeShoppingListRecipe(recipeId))
+    onRemoveIngredientHandler: onRemoveIngredientHandler,
+    onRemoveRecipeHandler: onRemoveRecipeHandler,
+    onDragEnd: onDragEnd
   }),
   branch(({ shoppingList }) => !shoppingList.shoppingListItems, renderNothing)
 )(ShoppingListBase);
@@ -83,6 +138,7 @@ const ShoppingListItemWrapper = styled(Box)`
     cursor: pointer;
   }
   text-decoration: ${({ isPurchased }) => (isPurchased ? "line-through" : "none")};
+  background-color: white;
 `;
 
 // Objectifs de la page shoppingList

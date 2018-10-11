@@ -26,6 +26,10 @@ export const REMOVE_SHOPPING_LIST_RECIPE_STARTED = "REMOVE_SHOPPING_LIST_RECIPE_
 export const REMOVE_SHOPPING_LIST_RECIPE_FAILED = "REMOVE_SHOPPING_LIST_RECIPE_FAILED";
 export const REMOVE_SHOPPING_LIST_RECIPE_FINISHED = "REMOVE_SHOPPING_LIST_RECIPE_FINISHED";
 
+export const REORDER_SHOPPING_LIST_ITEM_STARTED = "REORDER_SHOPPING_LIST_ITEM_STARTED";
+export const REORDER_SHOPPING_LIST_ITEM_FAILED = "REORDER_SHOPPING_LIST_ITEM_FAILED";
+export const REORDER_SHOPPING_LIST_ITEM_FINISHED = "REORDER_SHOPPING_LIST_ITEM_FINISHED";
+
 // Action Creators
 export const selectShoppingListItemStarted = () => ({ type: SELECT_SHOPPING_LIST_ITEM_STARTED });
 export const selectShoppingListItemFailed = () => ({ type: SELECT_SHOPPING_LIST_ITEM_FAILED });
@@ -68,20 +72,29 @@ export const addCustomIngredientsToShoppingListCompleted = ingredient => {
   };
 };
 
+export const reOrderShoppingListItemStarted = () => ({ type: REORDER_SHOPPING_LIST_ITEM_STARTED });
+export const reOrderShoppingListItemFailed = () => ({ type: REORDER_SHOPPING_LIST_ITEM_FAILED });
+export const reOrderShoppingListItemFinished = newShoppingListItemsId => {
+  return { type: REORDER_SHOPPING_LIST_ITEM_FINISHED, newShoppingListItemsId };
+};
+
 //TODO  implement the get selected item status instead of asking for the whole shoppinglist each time we update the pruchase status
 // export const GET_SELECTED_ITEM_STATUS_STARTED = "GET_SELECTED_ITEM_STATUS_STARTED";
 // export const GET_SELECTED_ITEM_STATUS_FINISHED = "GET_SELECTED_ITEM_STATUS_FINISHED";
 // export const GET_SELECTED_ITEM_STATUS_FAILED = "GET_SELECTED_ITEM_STATUS_FAILED";
 
+// reducer
+
 export const customIngredient = (state, action) => {
   switch (action.type) {
     case ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED:
       return state.concat([action.ingredient]);
+    default:
+      return state;
   }
 };
 
-export const shoppingList = (state = [], action) => {
-  console.log("state", state);
+export const shoppingList = (state = {}, action) => {
   switch (action.type) {
     case ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED:
       return {
@@ -123,37 +136,52 @@ export const shoppingList = (state = [], action) => {
         error: "Error in getting recipes"
       };
     case GET_SHOPPING_LIST_SUCCEED:
+      const shoppingListItems = action.shoppingList ? action.shoppingList.shoppingListItems : {};
+      const shoppingListItemsId = action.shoppingList ? action.shoppingList.shoppingListItemsId : [];
+      const shoppingListRecipes = action.shoppingList ? action.shoppingList.shoppingListRecipes : [];
+
       return {
         ...state,
-        shoppingListItems:
-          action.shoppingList !== null
-            ? Object.keys(action.shoppingList.shoppingListItems).map(item => action.shoppingList.shoppingListItems[item])
-            : [],
-        shoppingListRecipes:
-          action.shoppingList !== null
-            ? Object.keys(action.shoppingList.shoppingListRecipes).map(item => action.shoppingList.shoppingListRecipes[item])
-            : [],
+        shoppingListItems: shoppingListItems !== null ? shoppingListItems : {},
+        shoppingListItemsId: shoppingListItemsId !== null ? shoppingListItemsId : [],
+        shoppingListRecipes: shoppingListRecipes !== null ? Object.keys(shoppingListRecipes).map(item => shoppingListRecipes[item]) : [],
         lastUpdated: action.receivedAt,
         inProgress: false,
         success: "Got shoppingList"
       };
+
+    case REORDER_SHOPPING_LIST_ITEM_FAILED:
+      return {
+        ...state,
+        inProgress: false,
+        error: "Error in reordering shoppingItems"
+      };
+    case REORDER_SHOPPING_LIST_ITEM_FINISHED:
+      return {
+        ...state,
+        shoppingListItemsId: action.newShoppingListItemsId,
+        inProgress: false,
+        error: "reordering completed"
+      };
+
     default:
       return state;
   }
 };
 
 // Side Effects
-export const filterIngredientsToRemove = (recipeId, shoppingListItems) =>
-  _.filter(shoppingListItems, ingredient => {
-    return ingredient.recipeId === recipeId;
-  });
+export const filterIngredientsToRemove = (recipeId, shoppingListItems) => {
+  const shoppingListItemsArray = _.values(shoppingListItems);
+  return _.filter(shoppingListItemsArray, ingredient => ingredient.recipeId === recipeId);
+};
 
-export const removeShoppingListRecipe = recipeId => {
+export const removeShoppingListRecipe = (recipeId, newShoppingListItemsId) => {
   const shoppingListRecipeRef = database.ref("shoppingList/shoppingListRecipes/");
   const shoppingListItemsRef = database.ref("shoppingList/shoppingListItems");
 
   return dispatch => {
     dispatch(removeShoppingListRecipeStarted());
+
     shoppingListRecipeRef
       .update({ [recipeId]: null })
       .then(() => shoppingListItemsRef.once("value"))
@@ -162,6 +190,7 @@ export const removeShoppingListRecipe = recipeId => {
         return Promise.all(shoppingListItemToRemove.map(ingredient => shoppingListItemsRef.child(ingredient.ingredientId).remove()));
       })
       .then(() => dispatch(removeShoppingListRecipeFinished()))
+      .then(() => dispatch(reOrderShoppingListItems(newShoppingListItemsId)))
       .then(() => dispatch(getShoppingList()))
       .catch(error => {
         console.log(error);
@@ -170,12 +199,21 @@ export const removeShoppingListRecipe = recipeId => {
   };
 };
 
-export const removeShoppingListItem = ingredientID => {
+export const removeShoppingListItem = (ingredientID, newShoppingListItemsId) => {
+  const shoppingListRecipeRef = database.ref("shoppingList/shoppingListRecipes/");
   const shoppingListItemRef = database.ref(`shoppingList/shoppingListItems/`);
+  const shoppingListItemsIdRef = database.ref("shoppingList/shoppingListItemsId/");
   return dispatch => {
     dispatch(removeShoppingListItemStarted());
+
+    //TODO - fix this hack, each ingredient removed should only be responsible to remove its parent recipe if the ingredient is the last one not all recipes
+    if (newShoppingListItemsId.length === 0) {
+      shoppingListRecipeRef.set(null);
+    }
+    dispatch(reOrderShoppingListItemFinished(newShoppingListItemsId));
     shoppingListItemRef
       .update({ [ingredientID]: null })
+      .then(() => shoppingListItemsIdRef.set(newShoppingListItemsId))
       .then(() => dispatch(removeShoppingListItemFinished()))
       .then(() => dispatch(getShoppingList()))
       .catch(error => {
@@ -209,12 +247,14 @@ export const selectShoppingListItem = (ingredientID, isPurchased) => {
   };
 };
 
-export const addCustomIngredientsToShoppingList = (meal, navigateToShoppingList) => {
+export const addCustomIngredientsToShoppingList = (meal, navigateToShoppingList, newShoppingListItemsId) => {
   return dispatch => {
     dispatch(addCustomIngredientsToShoppingListRequested());
     const shoppingListRef = database.ref(`shoppingList/shoppingListItems/${meal.ingredientId}`);
+    const shoppingListItemsIdRef = database.ref(`shoppingList/shoppingListItemsId/`);
     shoppingListRef
       .update(meal)
+      .then(() => shoppingListItemsIdRef.set(newShoppingListItemsId))
       .then(() => dispatch(addCustomIngredientsToShoppingListCompleted(meal)))
       .then(() => navigateToShoppingList())
       .catch(error => {
@@ -224,14 +264,24 @@ export const addCustomIngredientsToShoppingList = (meal, navigateToShoppingList)
   };
 };
 
-export const addIngredientsToShoppingList = (meal, navigateToShoppingList) => {
+export const allShoppingListItemsId = (shoppingListItems, newShoppingListItems) => {
+  if (shoppingListItems) {
+    return _.union(shoppingListItems, newShoppingListItems);
+  }
+  return newShoppingListItems;
+};
+
+export const addIngredientsToShoppingList = (meal, shoppingListItemsId, navigateToShoppingList) => {
   return dispatch => {
     dispatch(addIngredientsToShoppingListRequested());
+    const ingredientList = concatAllIngredientsIntoOneList(meal);
     const shoppingListRecipesRef = database.ref("shoppingList/shoppingListRecipes/" + meal.recipeId);
-    const shoppingListRef = database.ref("shoppingList/shoppingListItems/");
+    const shoppingListItemsRef = database.ref("shoppingList/shoppingListItems/");
+    const shoppingListItemsIdRef = database.ref("shoppingList/shoppingListItemsId/");
     shoppingListRecipesRef
       .update(meal)
-      .then(() => shoppingListRef.update(concatAllIngredientsIntoOneList(meal)))
+      .then(() => shoppingListItemsRef.update(ingredientList))
+      .then(() => shoppingListItemsIdRef.set(allShoppingListItemsId(shoppingListItemsId, Object.keys(ingredientList))))
       .then(() => dispatch(addIngredientsToShoppingListCompleted()))
       .then(() => navigateToShoppingList())
       .catch(error => {
@@ -252,5 +302,16 @@ export const getShoppingList = () => {
         console.log(error);
         dispatch(getShoppingListFailed());
       });
+  };
+};
+
+export const reOrderShoppingListItems = newShoppingListItemsId => {
+  return dispatch => {
+    dispatch(reOrderShoppingListItemFinished(newShoppingListItemsId));
+    const shoppingListItemsIdRef = database.ref("shoppingList/shoppingListItemsId/");
+    return shoppingListItemsIdRef.set(newShoppingListItemsId).catch(error => {
+      console.log(error);
+      dispatch(reOrderShoppingListItemFailed());
+    });
   };
 };

@@ -36,9 +36,12 @@ export const AddCustomIngredient = compose(
     return { ingredient };
   }),
   withHandlers({
-    handleSubmit: ({ dispatch, ingredient, history, setFieldValue }) => e => {
+    handleSubmit: ({ dispatch, ingredient, history, setFieldValue, shoppingList }) => e => {
       e.preventDefault();
-      dispatch(addCustomIngredientsToShoppingList(ingredient, () => history.push("/ShoppingList")));
+
+      const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat([ingredient.ingredientId]);
+
+      dispatch(addCustomIngredientsToShoppingList(ingredient, () => history.push("/ShoppingList"), newShoppingListItemsId));
       setFieldValue("");
     }
   })

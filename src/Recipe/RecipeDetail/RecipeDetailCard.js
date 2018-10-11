@@ -2,12 +2,12 @@ import React from "react";
 import styled from "styled-components";
 import _ from "lodash";
 import { branch, compose, renderNothing, withHandlers, withProps, withState } from "recompose";
-import { FlexDivColumn } from "../../CssComponents";
 import { Button, TextField, Typography } from "material-ui";
 import { withStyles } from "material-ui/styles";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppingList-reducer";
+import { Box } from "../../BasicComponents/Box";
 
 //########################################################
 //                 RecipeDetailCardHeader
@@ -15,14 +15,14 @@ import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppin
 const RecipeDetailCardHeader = ({ canBeFrozen, cookingTime, pricePerPortion }) => {
   return (
     <RecipeDetailCardHeaderContainer>
-      <FlexDivColumn>
+      <Box vertical>
         <Typography variant="subheading">{`Ingredients: add number`}</Typography>
         {canBeFrozen && <Typography variant="subheading"> can be frozen</Typography>}
-      </FlexDivColumn>
-      <FlexDivColumn>
+      </Box>
+      <Box vertical>
         <Typography variant="subheading"> cooking Time : {cookingTime}</Typography>
         <Typography variant="subheading"> portion price : {pricePerPortion}</Typography>
-      </FlexDivColumn>
+      </Box>
     </RecipeDetailCardHeaderContainer>
   );
 };
@@ -110,12 +110,18 @@ export const AddToShoppingListForm = compose(
     meal.title = title;
     return { meal };
   }),
-  connect(),
+  connect(({ shoppingList }) => {
+    if (shoppingList.shoppingListItems)
+      return {
+        shoppingListItemsId: Object.keys(shoppingList.shoppingListItems)
+      };
+    else return {};
+  }),
   withRouter,
   withHandlers({
-    handleSubmit: ({ meal, dispatch, history }) => event => {
+    handleSubmit: ({ meal, dispatch, shoppingListItemsId, history }) => event => {
       event.preventDefault();
-      return dispatch(addIngredientsToShoppingList(meal, () => history.push("/ShoppingList")));
+      return dispatch(addIngredientsToShoppingList(meal, shoppingListItemsId, () => history.push("/ShoppingList")));
     }
   })
 )(AddToShoppingListFormBase);
