@@ -11,12 +11,12 @@ const devConfig = {
 };
 
 const prodConfig = {
-  // apiKey: YOUR_API_KEY,
-  // authDomain: YOUR_AUTH_DOMAIN,
-  // databaseURL: YOUR_DATABASE_URL,
-  // projectId: YOUR_PROJECT_ID,
-  // storageBucket: "",
-  // messagingSenderId: YOUR_MESSAGING_SENDER_ID
+  apiKey: "AIzaSyBK0xCNolGbTWO4aVUSqDPphAxtbGhyZbs",
+  authDomain: "choppy-prod.firebaseapp.com",
+  databaseURL: "https://choppy-prod.firebaseio.com",
+  projectId: "choppy-prod",
+  storageBucket: "",
+  messagingSenderId: "250653561373"
 };
 
 const config = process.env.NODE_ENV === "production" ? prodConfig : devConfig;
