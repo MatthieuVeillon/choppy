@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppingList-reducer";
 import { Box } from "../../BasicComponents/Box";
+import * as routes from "../../constants/routes";
 
 //########################################################
 //                 RecipeDetailCardHeader
@@ -121,7 +122,7 @@ export const AddToShoppingListForm = compose(
   withHandlers({
     handleSubmit: ({ meal, dispatch, shoppingListItemsId, history }) => event => {
       event.preventDefault();
-      return dispatch(addIngredientsToShoppingList(meal, shoppingListItemsId, () => history.push("/ShoppingList")));
+      return dispatch(addIngredientsToShoppingList(meal, shoppingListItemsId, () => history.push(routes.SHOPPING_LIST)));
     }
   })
 )(AddToShoppingListFormBase);

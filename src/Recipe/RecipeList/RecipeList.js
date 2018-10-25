@@ -2,14 +2,19 @@ import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import { RecipeCard } from "../RecipeCard/RecipeCard";
-import {connect} from "react-redux";
+import { connect } from "react-redux";
+import { withRecipeData } from "../withRecipeData";
 
-export const RecipeList = ({ recipes }) =>
+export const RecipeListBase = ({ recipes }) =>
   recipes ? (
     <RecipeHomeCardContainer>
-      {recipes.map(recipe => <RecipeCard key={recipe.recipeId} {...recipe} />)}
+      {recipes.map(recipe => (
+        <RecipeCard key={recipe.recipeId} {...recipe} />
+      ))}
     </RecipeHomeCardContainer>
   ) : null;
+
+export const RecipeList = withRecipeData(RecipeListBase);
 
 RecipeList.propTypes = {
   recipes: PropTypes.arrayOf(
@@ -41,24 +46,22 @@ const RecipeHomeCardContainer = styled.div`
   justify-content: space-evenly;
 `;
 
-
 const getVisibleRecipes = (recipes, category) => {
-    switch (category) {
-        case "SHOW_VEGAN":
-            return recipes.filter(recipe => recipe.categories.vegan);
-        case "SHOW_HEALTHY":
-            return recipes.filter(recipe => recipe.categories.healthy);
-        case "SHOW_ALL":
-        default:
-            return recipes;
-    }
+  switch (category) {
+    case "SHOW_VEGAN":
+      return recipes.filter(recipe => recipe.categories.vegan);
+    case "SHOW_HEALTHY":
+      return recipes.filter(recipe => recipe.categories.healthy);
+    case "SHOW_ALL":
+    default:
+      return recipes;
+  }
 };
 
 const mapStateToProps = state => {
-    return {
-        recipes: getVisibleRecipes(state.recipes.recipes, state.categoryFilter)
-    };
+  return {
+    recipes: getVisibleRecipes(state.recipes.recipes, state.categoryFilter)
+  };
 };
-
 
 export const VisibleRecipeList = connect(mapStateToProps)(RecipeList);

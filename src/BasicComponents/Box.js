@@ -5,9 +5,18 @@ export const Box = styled.div`
     flex-direction: ${props => (props.vertical ? "column" : "row")};
     flex-wrap: ${props => (props.wrap ? "wrap" : "nowrap")};
     justify-content: ${props =>
-      props.center ? "center" : props.spaceAround ? "space-around" : props.spaceBetween ? "space-between" : "flex-start"};
+      props.justifyContent
+        ? props.justifyContent
+        : props.center
+          ? "center"
+          : props.spaceAround
+            ? "space-around"
+            : props.spaceBetween
+              ? "space-between"
+              : "flex-start"};
     align-items: ${props => (props.alignItems ? "center" : "stretch")};
     align-self: ${props => (props.alignSelf ? props.alignSelf : "auto")};
+    flex-grow: ${props => (props.grow ? props.grow : 0)};
     background-color: ${props => (props.debug ? "red" : props.color)};
     width: ${props => (props.width ? props.width : "auto")}
     height: ${props => (props.height ? props.height : "auto")}
@@ -46,18 +55,20 @@ export const TextArea = styled.textarea`
     border-radius: 0;
 `;
 
-export const Button = styled.button`
+export const Button = styled.button.attrs({
+  disabled: props => props.disabled
+})`
     font-size: ${props => (props.fontSize ? props.fontSize : "17px")}
     text-transform: uppercase;
-    width: ${props => (props.width ? props.width : "auto")}
-    height: ${props => (props.height ? props.height : "auto")}
-    background-color: ${props => (props.primary ? "#4caf50" : "white")}
-    color: ${props => (props.primary ? "white" : "#4caf50")}
-     margin-top: ${props => (props.top ? props.top : 0)}
-    border: 2px solid #4caf50;
-    cursor: pointer;
+    width: ${props => (props.width ? props.width : "auto")};
+    height: ${props => (props.height ? props.height : "auto")};
+    background-color: ${props => (props.disabled ? "white" : props.primary ? "#4caf50" : "white")};
+    color: ${props => (props.disabled ? "ligthgrey" : props.primary ? "white" : "#4caf50")};
+     margin-top: ${props => (props.top ? props.top : 0)};
+    border: 2px solid ${props => (props.disabled ? "ligthgrey" : "#4caf50")};
+    cursor: ${props => (props.disabled ? "default" : "pointer")};
     text-align: center;
-    text-decoration: none;
+    text-decoration: none;   
 `;
 
 export const Select = styled.select`

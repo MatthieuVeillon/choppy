@@ -39,9 +39,9 @@ class AddRecipeForm extends Component {
 
   handleChange = event => {
     const target = event.target;
-    this.setState({
+    this.setState(() => ({
       [target.id]: target.type === "checkbox" ? target.checked : target.value
-    });
+    }));
   };
 
   handleFile = event => {
