@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import "./App.css";
 import { Route } from "react-router-dom";
 import AddRecipeForm from "./AddRecipeForm/AddRecipeForm";
@@ -10,7 +10,7 @@ import { Navigation } from "./Navigation/Navigation";
 import * as routes from "./constants/routes.js";
 import { SignInPage } from "./authentication/SignIn";
 import { SignUpPage } from "./authentication/SignUp";
-import { PasswordForgetPage } from "./authentication/PasswordForget";
+import { PasswordForgetForm } from "./authentication/PasswordForget";
 import { withAuthentication } from "./authentication/withAuthentication";
 import { AccountPage } from "./user/account";
 
@@ -32,7 +32,7 @@ const App = () => {
       <Route path={routes.SHOPPING_LIST} component={ShoppingList} />
       <Route path="/recipe/:recipeId" component={RecipeDetailCard} />
       <Route path={routes.SIGN_IN} component={SignInPage} />
-      <Route path={routes.PASSWORD_FORGET} component={PasswordForgetPage} />
+      <Route path={routes.PASSWORD_FORGET} component={PasswordForgetForm} />
       <Route path={routes.SIGN_UP} component={SignUpPage} />
       <Route path={routes.ACCOUNT} component={AccountPage} />
     </div>

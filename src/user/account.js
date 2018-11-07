@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { Box } from "../BasicComponents/Box";
 import { PasswordChangeForm } from "../authentication/PasswordChangeForm";
 import { PasswordForgetForm } from "../authentication/PasswordForget";
+import { renderNothing, compose, branch } from "recompose";
 
 const AccountPageBase = ({ authUser }) => (
   <Box vertical>
@@ -12,4 +13,7 @@ const AccountPageBase = ({ authUser }) => (
   </Box>
 );
 
-export const AccountPage = connect(({ sessionState }) => ({ authUser: sessionState.authUser }))(AccountPageBase);
+export const AccountPage = compose(
+  connect(({ sessionState }) => ({ authUser: sessionState.authUser })),
+  branch(({ authUser }) => !authUser, renderNothing)
+)(AccountPageBase);

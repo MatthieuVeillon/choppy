@@ -1,4 +1,3 @@
-import React from "react";
 import { compose, lifecycle } from "recompose";
 import { firebase } from "../firebase";
 import { connect } from "react-redux";

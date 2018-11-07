@@ -5,7 +5,7 @@ import { auth } from "../firebase/index";
 import * as routes from "../constants/routes";
 import { Form } from "../BasicComponents/Form";
 import { compose } from "recompose";
-import { withRouter } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import { PasswordForgetLink } from "./PasswordForget";
 
 const INITIAL_STATE = {
@@ -51,7 +51,7 @@ class SignInForm extends Component {
       <Form onSubmit={this.onSubmit}>
         <FormField type="text" value={email} onChange={this.onHandleChange} id="email" placeholder={"email"} width="250px" bottom="10px" />
         <FormField
-          type="text"
+          type="password"
           value={password}
           onChange={this.onHandleChange}
           id="password"
@@ -67,6 +67,11 @@ class SignInForm extends Component {
     );
   }
 }
+export const SignInLink = () => (
+  <Box>
+    <Link to={routes.SIGN_IN}> Sign In </Link>
+  </Box>
+);
 
 const SignInPageBase = ({ history }) => (
   <Box vertical>

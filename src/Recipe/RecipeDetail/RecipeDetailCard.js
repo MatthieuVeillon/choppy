@@ -68,7 +68,7 @@ const RecipeCookingSteps = ({ cookingSteps }) => (
 //########################################################
 //                 AddToShoppingListForm
 //########################################################
-export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandler, ingredients, defaultPortionNumber }) => (
+export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandler, ingredients, defaultPortionNumber, authUser }) => (
   <form onSubmit={handleSubmit}>
     <TextField
       required
@@ -82,7 +82,8 @@ export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandl
       }}
       margin="normal"
     />
-    ;<AddToShoppingListButton portion={portion} ingredients={ingredients} defaultPortionNumber={defaultPortionNumber} />
+    <AddToShoppingListButton disabled={!authUser} portion={portion} ingredients={ingredients} defaultPortionNumber={defaultPortionNumber} />
+    {!authUser && <p>Please login to use the shopping list feature</p>}
   </form>
 );
 
@@ -111,12 +112,15 @@ export const AddToShoppingListForm = compose(
     meal.title = title;
     return { meal };
   }),
-  connect(({ shoppingList }) => {
-    if (shoppingList.shoppingListItems)
-      return {
-        shoppingListItemsId: Object.keys(shoppingList.shoppingListItems)
-      };
-    else return {};
+  connect(({ shoppingList, sessionState }) => {
+    const computedProps = {};
+    if (shoppingList.shoppingListItems) {
+      computedProps.shoppingListItemsId = Object.keys(shoppingList.shoppingListItems);
+    }
+    if (sessionState.authUser !== null) {
+      computedProps.authUser = sessionState.authUser.uid;
+    }
+    return computedProps;
   }),
   withRouter,
   withHandlers({
@@ -131,8 +135,8 @@ export const AddToShoppingListForm = compose(
 //                 AddToShoppingListButton
 //########################################################
 
-export const AddToShoppingListButtonBase = ({ classes }) => (
-  <Button type="submit" className={classes.Button} variant="raised">
+export const AddToShoppingListButtonBase = ({ classes, disabled }) => (
+  <Button disabled={disabled} type="submit" className={classes.Button} variant="raised">
     Add To Shopping Card
   </Button>
 );

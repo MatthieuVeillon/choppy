@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { auth } from "../firebase";
-import { Box, FormField } from "../BasicComponents/Box";
+import { Box, Button, FormField } from "../BasicComponents/Box";
 import { Form } from "../BasicComponents/Form";
 import * as routes from "../constants/routes";
 
@@ -39,9 +39,24 @@ export class PasswordForgetForm extends Component {
     const isInvalid = email === "";
 
     return (
-      <Form>
-        <FormField type="text" value={email} onChange={this.onHandleChange} id="email" placeholder={"email"} width="250px" bottom="10px" />
-      </Form>
+      <Box vertical>
+        <h3> PasswordForget</h3>
+        <Form>
+          <FormField
+            type="text"
+            value={email}
+            onChange={this.onHandleChange}
+            id="email"
+            placeholder={"email"}
+            width="250px"
+            bottom="10px"
+          />
+          <Button primary disabled={isInvalid} type="submit">
+            Sign Up
+          </Button>
+          {error && <p>{error.message}</p>}
+        </Form>
+      </Box>
     );
   }
 }
@@ -50,11 +65,4 @@ export const PasswordForgetLink = () => (
   <p>
     <Link to={routes.PASSWORD_FORGET}>Forgot password ?</Link>
   </p>
-);
-
-export const PasswordForgetPage = () => (
-  <Box>
-    <h1> PasswordForget</h1>
-    <PasswordForgetForm />
-  </Box>
 );

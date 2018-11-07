@@ -1,5 +1,5 @@
 import React from "react";
-import { branch, compose, lifecycle, renderNothing, withHandlers } from "recompose";
+import { branch, compose, lifecycle, renderComponent, renderNothing, withHandlers } from "recompose";
 import _ from "lodash";
 import { connect } from "react-redux";
 import styled from "styled-components";
@@ -14,6 +14,7 @@ import {
 import { Box } from "../BasicComponents/Box";
 import { AddCustomIngredient } from "./AddCustomIngredient";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { SignInLink } from "../authentication/SignIn";
 
 export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler, index }) => {
   return (
@@ -82,7 +83,7 @@ const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngr
       </Droppable>
     </DragDropContext>
     <h4> Custom ingredients </h4>
-    <AddCustomIngredient shoppingList={shoppingList}/>
+    <AddCustomIngredient shoppingList={shoppingList} />
   </div>
 );
 
@@ -115,8 +116,18 @@ const onRemoveRecipeHandler = ({ dispatch, shoppingList }) => recipeId => {
   return dispatch(removeShoppingListRecipe(recipeId, newShoppingListItemsId));
 };
 
+const NotAuthenticatedPlaceholder = () => (
+  <Box vertical height={"200px"} center alignItems>
+    <p>please login</p>
+    <SignInLink />
+  </Box>
+);
+
 export const ShoppingList = compose(
-  connect(),
+  connect(({ sessionState }) => ({
+    authUser: sessionState.authUser
+  })),
+  branch(({ authUser }) => !authUser, renderComponent(NotAuthenticatedPlaceholder)),
   lifecycle({
     componentDidMount() {
       this.props.dispatch(getShoppingList());
@@ -140,13 +151,3 @@ const ShoppingListItemWrapper = styled(Box)`
   text-decoration: ${({ isPurchased }) => (isPurchased ? "line-through" : "none")};
   background-color: white;
 `;
-
-// Objectifs de la page shoppingList
-
-/*
-- La page garde en mémoire les items cochés. Donc dans le state redux et la BD
-- Idéalement j'aimerai mapper tous les ingrédients depuis le même array
-- il me faut un moyen sur et unique d'identifier ces ingrédient pour les barrer et / ou remove du array
-- j'envoie la liste des ingrédients au fur et à mesure de manière individuelle à chaque fois que l'utilisateur envoie des ingrédients
-
-*/

@@ -45,38 +45,33 @@ export const removeShoppingListRecipeFinished = () => ({ type: REMOVE_SHOPPING_L
 
 const getShoppingListRequested = () => ({ type: GET_SHOPPING_LIST_REQUESTED });
 const getShoppingListFailed = () => ({ type: GET_SHOPPING_LIST_FAILED });
-const getShoppingListSucceed = shoppingList => {
-  return {
+const getShoppingListSucceed = shoppingList => ({
     type: GET_SHOPPING_LIST_SUCCEED,
     shoppingList,
     receivedAt: Date.now()
-  };
-};
+});
 export const addIngredientsToShoppingListRequested = () => ({ type: ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED });
 export const addIngredientsToShoppingListFailed = () => ({ type: ADD_INGREDIENTS_SHOPPING_LIST_FAILED });
-export const addIngredientsToShoppingListCompleted = ingredient => {
-  return {
+export const addIngredientsToShoppingListCompleted = ingredient => ({
     type: ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED,
     ingredient
-  };
-};
+});
 
 export const addCustomIngredientsToShoppingListRequested = () => ({
   type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED
 });
 export const addCustomIngredientsToShoppingListFailed = () => ({ type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED });
-export const addCustomIngredientsToShoppingListCompleted = ingredient => {
-  return {
+export const addCustomIngredientsToShoppingListCompleted = ingredient => ({
     type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED,
     ingredient
-  };
-};
+});
 
 export const reOrderShoppingListItemStarted = () => ({ type: REORDER_SHOPPING_LIST_ITEM_STARTED });
 export const reOrderShoppingListItemFailed = () => ({ type: REORDER_SHOPPING_LIST_ITEM_FAILED });
-export const reOrderShoppingListItemFinished = newShoppingListItemsId => {
-  return { type: REORDER_SHOPPING_LIST_ITEM_FINISHED, newShoppingListItemsId };
-};
+export const reOrderShoppingListItemFinished = newShoppingListItemsId => ({
+    type: REORDER_SHOPPING_LIST_ITEM_FINISHED,
+    newShoppingListItemsId
+});
 
 //TODO  implement the get selected item status instead of asking for the whole shoppinglist each time we update the pruchase status
 // export const GET_SELECTED_ITEM_STATUS_STARTED = "GET_SELECTED_ITEM_STATUS_STARTED";

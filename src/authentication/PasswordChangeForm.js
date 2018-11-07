@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { auth } from "../firebase";
-import { Button, FormField } from "../BasicComponents/Box";
+import { Box, Button, FormField } from "../BasicComponents/Box";
 import { Form } from "../BasicComponents/Form";
 
 const byPropKey = (propertyName, value) => () => ({
@@ -36,30 +36,33 @@ export class PasswordChangeForm extends Component {
     const isInvalid = passwordOne !== passwordTwo || passwordOne === "";
 
     return (
-      <Form>
-        <FormField
-          type="text"
-          value={passwordOne}
-          onChange={this.onHandleChange}
-          id="passwordOne"
-          placeholder={"New Password"}
-          width="250px"
-          bottom="10px"
-        />
-        <FormField
-          type="text"
-          value={passwordTwo}
-          onChange={this.onHandleChange}
-          id="passwordTwo"
-          placeholder={"Confirm New Password"}
-          width="250px"
-          bottom="10px"
-        />
-        <Button primary disabled={isInvalid} type="submit">
-          Sign In
-        </Button>
-        {error && <p> {error.message}</p>}
-      </Form>
+      <Box vertical>
+        <h3>Reset my password</h3>
+        <Form>
+          <FormField
+            type="text"
+            value={passwordOne}
+            onChange={this.onHandleChange}
+            id="passwordOne"
+            placeholder={"New Password"}
+            width="250px"
+            bottom="10px"
+          />
+          <FormField
+            type="text"
+            value={passwordTwo}
+            onChange={this.onHandleChange}
+            id="passwordTwo"
+            placeholder={"Confirm New Password"}
+            width="250px"
+            bottom="10px"
+          />
+          <Button primary disabled={isInvalid} type="submit">
+            Reset my password
+          </Button>
+          {error && <p> {error.message}</p>}
+        </Form>
+      </Box>
     );
   }
 }

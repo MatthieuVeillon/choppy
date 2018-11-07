@@ -1,4 +1,3 @@
-import React from "react";
 import { getRecipes } from "./reducer/recipe-reducer";
 import { connect } from "react-redux";
 import { compose, lifecycle } from "recompose";

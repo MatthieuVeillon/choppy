@@ -5,6 +5,8 @@ import { Link, withRouter } from "react-router-dom";
 import { auth } from "../firebase/index";
 import { compose } from "recompose";
 import * as routes from "../constants/routes";
+import { createUserInDB } from "./reducer/user-reducer";
+import { connect } from "react-redux";
 
 export const SignUpLink = () => (
   <Box>
@@ -33,10 +35,13 @@ class SignUpForm extends Component {
   onSubmit = async event => {
     const { username, email, passwordOne } = this.state;
     const { history } = this.props;
+    const { createUserInDB } = this.props;
 
     auth
       .doCreateUserWithEmailAndPassword(email, passwordOne)
-      .then(authUser => {
+      .then(async authUser => {
+        console.log("authUser", authUser);
+        await createUserInDB(authUser.uid, username);
         this.setState({ ...INITIAL_STATE });
         history.push(routes.HOME);
       })
@@ -67,7 +72,7 @@ class SignUpForm extends Component {
         />
         <FormField type="text" value={email} onChange={this.onHandleChange} id="email" placeholder={"email"} width="250px" bottom="10px" />
         <FormField
-          type="text"
+          type="password"
           value={passwordOne}
           onChange={this.onHandleChange}
           id="passwordOne"
@@ -76,7 +81,7 @@ class SignUpForm extends Component {
           bottom="10px"
         />
         <FormField
-          type="text"
+          type="password"
           value={passwordTwo}
           onChange={this.onHandleChange}
           id="passwordTwo"
@@ -93,11 +98,21 @@ class SignUpForm extends Component {
   }
 }
 
-const SignUpPageBase = ({ history }) => (
+const SignUpPageBase = ({ history, createUserInDB }) => (
   <Box vertical>
     <h1>Sign Up</h1>
-    <SignUpForm history={history} />
+    <SignUpForm history={history} createUserInDB={createUserInDB} />
   </Box>
 );
-
-export const SignUpPage = compose(withRouter)(SignUpPageBase);
+const mapDispatchToProps = dispatch => {
+  return {
+    createUserInDB: (id, username, email) => dispatch(createUserInDB(id, username, email))
+  };
+};
+export const SignUpPage = compose(
+  withRouter,
+  connect(
+    null,
+    mapDispatchToProps
+  )
+)(SignUpPageBase);
