@@ -40,7 +40,6 @@ class SignUpForm extends Component {
     auth
       .doCreateUserWithEmailAndPassword(email, passwordOne)
       .then(async authUser => {
-        console.log("authUser", authUser);
         await createUserInDB(authUser.uid, username);
         this.setState({ ...INITIAL_STATE });
         history.push(routes.HOME);

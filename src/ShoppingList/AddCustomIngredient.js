@@ -6,6 +6,7 @@ import { Form } from "../BasicComponents/Form";
 import { addCustomIngredientsToShoppingList } from "./reducer/shoppingList-reducer";
 import { withRouter } from "react-router";
 import * as uuid from "uuid";
+import * as routes from "../constants/routes";
 
 export const AddCustomIngredientBase = ({ field, onChange, handleSubmit }) => (
   <Box>
@@ -35,13 +36,16 @@ export const AddCustomIngredient = compose(
     ingredient.recipeId = "custom";
     return { ingredient };
   }),
+  connect(({ sessionState }) => ({
+    uid: sessionState.authUser.uid
+  })),
   withHandlers({
-    handleSubmit: ({ dispatch, ingredient, history, setFieldValue, shoppingList }) => e => {
+    handleSubmit: ({ dispatch, ingredient, history, setFieldValue, shoppingList, uid }) => e => {
       e.preventDefault();
 
       const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat([ingredient.ingredientId]);
 
-      dispatch(addCustomIngredientsToShoppingList(ingredient, () => history.push("/ShoppingList"), newShoppingListItemsId));
+      dispatch(addCustomIngredientsToShoppingList(ingredient, () => history.push(routes.SHOPPING_LIST), newShoppingListItemsId, uid));
       setFieldValue("");
     }
   })

@@ -8,6 +8,9 @@ import { CookingStepField } from "../FormInput/CookingStepField";
 import { addRecipe } from "../Recipe/reducer/recipe-reducer";
 import { Box, Button, FormField } from "../BasicComponents/Box";
 import { Form } from "../BasicComponents/Form";
+import { branch, renderComponent, compose } from "recompose";
+import { NotAuthenticatedPlaceholder } from "../ShoppingList/ShoppingList";
+import _ from "lodash";
 
 const initialState = {
   title: "",
@@ -183,7 +186,13 @@ const mapDispatchToProps = dispatch => {
     addRecipe: (recipe, navigateToHome) => dispatch(addRecipe(recipe, navigateToHome))
   };
 };
-export default connect(
-  null,
-  mapDispatchToProps
+
+export const AddRecipeFormPage = compose(
+  connect(
+    ({ sessionState }) => ({
+      uid: _.get(sessionState, "authUser.uid")
+    }),
+    mapDispatchToProps
+  ),
+  branch(({ uid }) => !uid, renderComponent(NotAuthenticatedPlaceholder))
 )(AddRecipeForm);

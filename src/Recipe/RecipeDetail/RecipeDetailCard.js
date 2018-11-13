@@ -9,6 +9,7 @@ import { withRouter } from "react-router-dom";
 import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppingList-reducer";
 import { Box } from "../../BasicComponents/Box";
 import * as routes from "../../constants/routes";
+import { withRecipeData } from "../withRecipeData";
 
 //########################################################
 //                 RecipeDetailCardHeader
@@ -68,7 +69,7 @@ const RecipeCookingSteps = ({ cookingSteps }) => (
 //########################################################
 //                 AddToShoppingListForm
 //########################################################
-export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandler, ingredients, defaultPortionNumber, authUser }) => (
+export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandler, ingredients, defaultPortionNumber, uid }) => (
   <form onSubmit={handleSubmit}>
     <TextField
       required
@@ -82,8 +83,8 @@ export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandl
       }}
       margin="normal"
     />
-    <AddToShoppingListButton disabled={!authUser} portion={portion} ingredients={ingredients} defaultPortionNumber={defaultPortionNumber} />
-    {!authUser && <p>Please login to use the shopping list feature</p>}
+    <AddToShoppingListButton disabled={!uid} portion={portion} ingredients={ingredients} defaultPortionNumber={defaultPortionNumber} />
+    {!uid && <p>Please login to use the shopping list feature</p>}
   </form>
 );
 
@@ -118,15 +119,15 @@ export const AddToShoppingListForm = compose(
       computedProps.shoppingListItemsId = Object.keys(shoppingList.shoppingListItems);
     }
     if (sessionState.authUser !== null) {
-      computedProps.authUser = sessionState.authUser.uid;
+      computedProps.uid = sessionState.authUser.uid;
     }
     return computedProps;
   }),
   withRouter,
   withHandlers({
-    handleSubmit: ({ meal, dispatch, shoppingListItemsId, history }) => event => {
+    handleSubmit: ({ meal, dispatch, shoppingListItemsId, history, uid }) => event => {
       event.preventDefault();
-      return dispatch(addIngredientsToShoppingList(meal, shoppingListItemsId, () => history.push(routes.SHOPPING_LIST)));
+      return dispatch(addIngredientsToShoppingList(meal, shoppingListItemsId, uid, () => history.push(routes.SHOPPING_LIST)));
     }
   })
 )(AddToShoppingListFormBase);
@@ -187,6 +188,7 @@ const RecipeDetailCardBase = ({
 );
 
 export const RecipeDetailCard = compose(
+  withRecipeData,
   connect((state, ownProps) => ({
     recipeDisplayed: _.find(state.recipes.recipes, ["recipeId", ownProps.match.params.recipeId])
   })),

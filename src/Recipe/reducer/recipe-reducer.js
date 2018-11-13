@@ -94,11 +94,16 @@ export const addRecipe = (recipe, navigateToHome) => {
   };
 };
 
-export const getRecipes = () => {
+export const getRecipes = (recipeId = null) => {
+  let ref;
+  if (recipeId) {
+    ref = database.ref(`/recipes/${recipeId}`);
+  }
+  ref = database.ref(`/recipes`);
+
   return function(dispatch) {
     dispatch(getRecipesRequested());
-    return database
-      .ref(`/recipes`)
+    ref
       .once("value")
       .then(snapshot => {
         dispatch(getRecipesSuccess(snapshot.val()));

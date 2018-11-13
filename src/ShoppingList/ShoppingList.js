@@ -87,7 +87,7 @@ const ShoppingListBase = ({ shoppingList, onClickIngredientHandler, onRemoveIngr
   </div>
 );
 
-const onDragEnd = ({ dispatch, shoppingList }) => result => {
+const onDragEnd = ({ dispatch, shoppingList, uid }) => result => {
   const { destination, source, draggableId } = result;
 
   if (!destination) {
@@ -100,23 +100,23 @@ const onDragEnd = ({ dispatch, shoppingList }) => result => {
   newShoppingListItemsId.splice(source.index, 1);
   newShoppingListItemsId.splice(destination.index, 0, draggableId);
 
-  dispatch(reOrderShoppingListItems(newShoppingListItemsId));
+  dispatch(reOrderShoppingListItems(newShoppingListItemsId, uid));
 };
 
-const onRemoveIngredientHandler = ({ dispatch, shoppingList }) => ingredientID => {
+const onRemoveIngredientHandler = ({ dispatch, shoppingList, uid }) => ingredientID => {
   const newShoppingListItemsId = shoppingList.shoppingListItemsId.filter(ingredient => ingredient !== ingredientID);
-  return dispatch(removeShoppingListItem(ingredientID, newShoppingListItemsId));
+  return dispatch(removeShoppingListItem(ingredientID, newShoppingListItemsId, uid));
 };
 
-const onRemoveRecipeHandler = ({ dispatch, shoppingList }) => recipeId => {
+const onRemoveRecipeHandler = ({ dispatch, shoppingList, uid }) => recipeId => {
   const abc = _.pickBy(shoppingList.shoppingListItems, item => item.recipeId === recipeId);
   const shoppingListItemsToRemove = Object.keys(abc);
 
   const newShoppingListItemsId = shoppingList.shoppingListItemsId.filter(ingredientId => !shoppingListItemsToRemove.includes(ingredientId));
-  return dispatch(removeShoppingListRecipe(recipeId, newShoppingListItemsId));
+  return dispatch(removeShoppingListRecipe(recipeId, newShoppingListItemsId, uid));
 };
 
-const NotAuthenticatedPlaceholder = () => (
+export const NotAuthenticatedPlaceholder = () => (
   <Box vertical height={"200px"} center alignItems>
     <p>please login</p>
     <SignInLink />
@@ -125,17 +125,18 @@ const NotAuthenticatedPlaceholder = () => (
 
 export const ShoppingList = compose(
   connect(({ sessionState }) => ({
-    authUser: sessionState.authUser
+    uid: _.get(sessionState, "authUser.uid")
   })),
-  branch(({ authUser }) => !authUser, renderComponent(NotAuthenticatedPlaceholder)),
+  branch(({ uid }) => !uid, renderComponent(NotAuthenticatedPlaceholder)),
   lifecycle({
     componentDidMount() {
-      this.props.dispatch(getShoppingList());
+      this.props.dispatch(getShoppingList(this.props.uid));
     }
   }),
   connect(state => ({ shoppingList: state.shoppingList })),
   withHandlers({
-    onClickIngredientHandler: ({ dispatch }) => (ingredientID, isPurchased) => dispatch(selectShoppingListItem(ingredientID, isPurchased)),
+    onClickIngredientHandler: ({ dispatch, uid }) => (ingredientID, isPurchased) =>
+      dispatch(selectShoppingListItem(ingredientID, isPurchased, uid)),
     onRemoveIngredientHandler: onRemoveIngredientHandler,
     onRemoveRecipeHandler: onRemoveRecipeHandler,
     onDragEnd: onDragEnd
