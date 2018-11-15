@@ -14,7 +14,7 @@ import {
 import { Box } from "../BasicComponents/Box";
 import { AddCustomIngredient } from "./AddCustomIngredient";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { SignInLink } from "../authentication/SignIn";
+import { SignInWithFirebase } from "../authentication/SignInWithFireBaseUI";
 
 export const ShoppingListItem = ({ onClickHandler, ingredient, onRemoveHandler, index }) => {
   return (
@@ -116,18 +116,11 @@ const onRemoveRecipeHandler = ({ dispatch, shoppingList, uid }) => recipeId => {
   return dispatch(removeShoppingListRecipe(recipeId, newShoppingListItemsId, uid));
 };
 
-export const NotAuthenticatedPlaceholder = () => (
-  <Box vertical height={"200px"} center alignItems>
-    <p>please login</p>
-    <SignInLink />
-  </Box>
-);
-
 export const ShoppingList = compose(
   connect(({ sessionState }) => ({
     uid: _.get(sessionState, "authUser.uid")
   })),
-  branch(({ uid }) => !uid, renderComponent(NotAuthenticatedPlaceholder)),
+  branch(({ uid }) => !uid, renderComponent(SignInWithFirebase)),
   lifecycle({
     componentDidMount() {
       this.props.dispatch(getShoppingList(this.props.uid));

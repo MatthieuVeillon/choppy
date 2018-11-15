@@ -1,12 +1,13 @@
 import React from "react";
 import styled from "styled-components";
+import { compose } from "recompose";
 import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import * as routes from "../constants/routes";
 import { SignOutButton } from "../authentication/SignOut";
 import { Box } from "../BasicComponents/Box";
 
-export const NavigationBase = ({ authUser }) => (
+const NavigationBase = ({ authUser }) => (
   <StyledNav>
     <StyledLink exact to={routes.HOME}>
       Home
@@ -34,13 +35,19 @@ export const NavigationBase = ({ authUser }) => (
     )}
   </StyledNav>
 );
-export const Navigation = connect(({ sessionState }) => ({
-  authUser: sessionState.authUser
-}))(NavigationBase);
 
-const StyledLink = styled(NavLink).attrs({
-  activeClassName: "active"
-})`
+export const Navigation = compose(
+  connect(
+    ({ sessionState }) => ({
+      authUser: sessionState.authUser
+    }),
+    undefined,
+    undefined,
+    { pure: false }
+  )
+)(NavigationBase);
+
+const StyledLink = styled(NavLink)`
   margin: 5px;
   color: black;
   color: black;

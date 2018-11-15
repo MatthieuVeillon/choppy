@@ -6,14 +6,12 @@ import { VisibleRecipeList } from "./Recipe/RecipeList/RecipeList";
 import { RecipeDetailCard } from "./Recipe/RecipeDetail/RecipeDetailCard";
 import { Navigation } from "./Navigation/Navigation";
 import * as routes from "./constants/routes.js";
-import { SignInPage } from "./authentication/SignIn";
 import { SignUpPage } from "./authentication/SignUp";
 import { PasswordForgetForm } from "./authentication/PasswordForget";
 import { withAuthentication } from "./authentication/withAuthentication";
 import { AccountPage } from "./user/account";
-import { lifecycle, compose } from "recompose";
-import { uiConfig, ui } from "./firebase/auth";
 import { AddRecipeFormPage } from "./AddRecipeForm/AddRecipeForm";
+import {SignInWithFirebase} from "./authentication/SignInWithFireBaseUI";
 
 const App = () => {
   return (
@@ -40,12 +38,5 @@ const App = () => {
   );
 };
 
-export const SignInWithFirebase = compose(
-  lifecycle({
-    componentDidMount() {
-      ui.start("#firebaseui-auth-container", uiConfig);
-    }
-  })
-)(() => <div id="firebaseui-auth-container" />);
 
 export default withAuthentication(App);

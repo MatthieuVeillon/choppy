@@ -9,8 +9,8 @@ import { addRecipe } from "../Recipe/reducer/recipe-reducer";
 import { Box, Button, FormField } from "../BasicComponents/Box";
 import { Form } from "../BasicComponents/Form";
 import { branch, renderComponent, compose } from "recompose";
-import { NotAuthenticatedPlaceholder } from "../ShoppingList/ShoppingList";
 import _ from "lodash";
+import { SignInWithFirebase } from "../authentication/SignInWithFireBaseUI";
 
 const initialState = {
   title: "",
@@ -194,5 +194,5 @@ export const AddRecipeFormPage = compose(
     }),
     mapDispatchToProps
   ),
-  branch(({ uid }) => !uid, renderComponent(NotAuthenticatedPlaceholder))
+  branch(({ uid }) => !uid, renderComponent(SignInWithFirebase))
 )(AddRecipeForm);
