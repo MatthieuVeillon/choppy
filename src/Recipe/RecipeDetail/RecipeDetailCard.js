@@ -2,14 +2,15 @@ import React from "react";
 import styled from "styled-components";
 import _ from "lodash";
 import { branch, compose, renderNothing, withHandlers, withProps, withState } from "recompose";
-import { Button, TextField, Typography } from "material-ui";
-import { withStyles } from "material-ui/styles";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
 import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppingList-reducer";
-import { Box } from "../../BasicComponents/Box";
+import { Box, Button } from "../../BasicComponents/Box";
 import * as routes from "../../constants/routes";
 import { withRecipeData } from "../withRecipeData";
+import Typography from "@material-ui/core/es/Typography/Typography";
+import TextField from "@material-ui/core/es/TextField/TextField";
+import withStyles from "@material-ui/core/es/styles/withStyles";
 
 //########################################################
 //                 RecipeDetailCardHeader
