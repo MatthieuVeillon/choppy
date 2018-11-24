@@ -1,0 +1,4 @@
+[build]
+base = "../choppy"
+publish = "../choppy/build/"
+command = "npm run build"
