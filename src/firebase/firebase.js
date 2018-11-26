@@ -16,7 +16,7 @@ const prodConfig = {
   authDomain: "choppy-prod.firebaseapp.com",
   databaseURL: "https://choppy-prod.firebaseio.com",
   projectId: "choppy-prod",
-  storageBucket: "",
+  storageBucket: "choppy-prod.appspot.com",
   messagingSenderId: "250653561373"
 };
 
