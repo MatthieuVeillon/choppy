@@ -31,7 +31,7 @@ export const IngredientField = ({ ingredient, index, handleChangeInDynamicElemen
       <option value="g" defaultValue>
         g
       </option>
-      <option value="l">l</option>
+      <option value="l">cl</option>
       <option value="cup">cup</option>
       <option value="piece">piece</option>
     </Select>
