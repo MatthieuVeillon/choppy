@@ -18,7 +18,6 @@ export const doPasswordReset = email => auth.sendPasswordResetEmail(email);
 export const doPasswordUpdate = password => auth.currentUser.updatePassword(password);
 
 export const uiConfig = {
-  signInSuccessUrl: "/shopping-list",
   signInOptions: [
     // Leave the lines as is for the providers you want to offer your users.
     firebase.auth.FacebookAuthProvider.PROVIDER_ID,
@@ -33,6 +32,9 @@ export const uiConfig = {
     window.location.assign("/localhost:3000");
   }
 };
+
+// https://mystifying-nightingale-757ff2.netlify.com/shopping-list
+// https://mystifying-nightingale-757ff2.netlify.com/shopping-list
 
 // Initialize the FirebaseUI Widget using Firebase.
 export const ui = new firebaseui.auth.AuthUI(firebase.auth());
