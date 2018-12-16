@@ -1,11 +1,11 @@
-import { database } from "../../firebase/index";
+import { database } from '../../firebase';
 
 const applySetUsers = (state, action) => ({ ...state, user: action.username });
 
 //Actions
-export const CREATE_USER_STARTED = "CREATE_USER_STARTED";
-export const CREATE_USER_FAILED = "CREATE_USER_FAILED";
-export const CREATE_USER_COMPLETED = "CREATE_USER_COMPLETED";
+export const CREATE_USER_STARTED = 'CREATE_USER_STARTED';
+export const CREATE_USER_FAILED = 'CREATE_USER_FAILED';
+export const CREATE_USER_COMPLETED = 'CREATE_USER_COMPLETED';
 //Actions Creator
 
 const addUserStarted = () => ({ type: CREATE_USER_STARTED });
@@ -24,14 +24,14 @@ export const userReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         inProgress: true,
-        error: "",
-        success: ""
+        error: '',
+        success: ''
       };
     case CREATE_USER_FAILED:
       return {
         ...state,
         inProgress: false,
-        error: "Error in getting recipes"
+        error: 'Error in getting recipes'
       };
     case CREATE_USER_COMPLETED:
       return applySetUsers(state, action);

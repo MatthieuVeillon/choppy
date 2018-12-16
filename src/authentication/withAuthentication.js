@@ -1,7 +1,7 @@
-import { compose, lifecycle } from "recompose";
-import { firebase } from "../firebase";
-import { connect } from "react-redux";
-import { AUTH_USER_SET } from "./reducer/session-reducer";
+import { compose, lifecycle } from 'recompose';
+import { auth } from '../firebase';
+import { connect } from 'react-redux';
+import { AUTH_USER_SET } from './reducer/session-reducer';
 
 export const withAuthentication = Component =>
   compose(
@@ -14,7 +14,7 @@ export const withAuthentication = Component =>
     lifecycle({
       componentDidMount() {
         const { onSetAuthUser } = this.props;
-        firebase.auth.onAuthStateChanged(authUser => {
+        auth.onAuthStateChanged(authUser => {
           authUser ? onSetAuthUser(authUser) : onSetAuthUser(null);
         });
       }

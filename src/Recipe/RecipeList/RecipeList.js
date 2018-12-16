@@ -1,9 +1,9 @@
-import React from "react";
-import PropTypes from "prop-types";
-import styled from "styled-components";
-import { RecipeCard } from "../RecipeCard/RecipeCard";
-import { connect } from "react-redux";
-import { withRecipeData } from "../withRecipeData";
+import React from 'react';
+import PropTypes from 'prop-types';
+import styled from 'styled-components';
+import { RecipeCard } from '../RecipeCard/RecipeCard';
+import { connect } from 'react-redux';
+import { withRecipeData } from '../withRecipeData';
 
 export const RecipeListBase = ({ recipes }) =>
   recipes ? (
@@ -21,7 +21,9 @@ RecipeList.propTypes = {
     PropTypes.shape({
       canBeFrozen: PropTypes.bool.isRequired,
       categories: PropTypes.object.isRequired,
-      cookingSteps: PropTypes.arrayOf(PropTypes.shape({ name: PropTypes.string })).isRequired,
+      cookingSteps: PropTypes.arrayOf(
+        PropTypes.shape({ name: PropTypes.string })
+      ).isRequired,
       cookingTime: PropTypes.string.isRequired,
       defaultPortionNumber: PropTypes.string.isRequired,
       ingredients: PropTypes.arrayOf(
@@ -46,13 +48,16 @@ const RecipeHomeCardContainer = styled.div`
   justify-content: space-evenly;
 `;
 
-const getVisibleRecipes = (recipes, category) => {
+const insensitiveSearch = (title, searchTerm) =>
+  title.toLowerCase().includes(searchTerm.toLowerCase());
+
+const getVisibleRecipesByCategory = (recipes, category) => {
   switch (category) {
-    case "SHOW_VEGAN":
+    case 'SHOW_VEGAN':
       return recipes.filter(recipe => recipe.categories.vegan);
-    case "SHOW_HEALTHY":
+    case 'SHOW_HEALTHY':
       return recipes.filter(recipe => recipe.categories.healthy);
-    case "SHOW_ALL":
+    case 'SHOW_ALL':
     default:
       return recipes;
   }
@@ -60,7 +65,12 @@ const getVisibleRecipes = (recipes, category) => {
 
 const mapStateToProps = state => {
   return {
-    recipes: getVisibleRecipes(state.recipes.recipes, state.categoryFilter)
+    recipes: (
+      getVisibleRecipesByCategory(
+        state.recipes.recipes,
+        state.categoryFilter
+      ) || []
+    ).filter(recipe => insensitiveSearch(recipe.title, state.recipeSearchState))
   };
 };
 

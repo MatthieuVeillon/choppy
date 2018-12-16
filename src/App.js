@@ -1,22 +1,24 @@
-import React from "react";
-import { Route } from "react-router-dom";
-import Header from "./Header/header";
-import { ShoppingList } from "./ShoppingList/ShoppingList";
-import { VisibleRecipeList } from "./Recipe/RecipeList/RecipeList";
-import { RecipeDetailCard } from "./Recipe/RecipeDetail/RecipeDetailCard";
-import { Navigation } from "./Navigation/Navigation";
-import * as routes from "./constants/routes.js";
-import { SignUpPage } from "./authentication/SignUp";
-import { PasswordForgetForm } from "./authentication/PasswordForget";
-import { withAuthentication } from "./authentication/withAuthentication";
-import { AccountPage } from "./user/account";
-import { AddRecipeFormPage } from "./AddRecipeForm/AddRecipeForm";
-import {SignInWithFirebase} from "./authentication/SignInWithFireBaseUI";
+import React from 'react';
+import { Route } from 'react-router-dom';
+import Header from './Header/header';
+import { ShoppingList } from './ShoppingList/ShoppingList';
+import { VisibleRecipeList } from './Recipe/RecipeList/RecipeList';
+import { RecipeDetailCard } from './Recipe/RecipeDetail/RecipeDetailCard';
+import { Navigation } from './Navigation/Navigation';
+import * as routes from './constants/routes.js';
+import { SignUpPage } from './authentication/SignUp';
+import { PasswordForgetForm } from './authentication/PasswordForget';
+import { withAuthentication } from './authentication/withAuthentication';
+import { AccountPage } from './user/account';
+import { AddRecipeFormPage } from './AddRecipeForm/AddRecipeForm';
+import { SignInWithFirebase } from './authentication/SignInWithFireBaseUI';
+import { SearchBar } from './SearchBar/SearchBar';
 
 const App = () => {
   return (
     <div className="App">
       <Navigation />
+      <SearchBar />
       <Route path={routes.ADD_RECIPE} component={AddRecipeFormPage} />
       <Route
         exact
@@ -37,6 +39,5 @@ const App = () => {
     </div>
   );
 };
-
 
 export default withAuthentication(App);
