@@ -40,7 +40,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "precommit": "lint-staged && npm run test"
+    "precommit": "lint-staged",
+    "test:staged": "cross-env CI=true react-scripts test --findRelatedTests"
   },
   "browserslist": [
     ">0.2%",
