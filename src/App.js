@@ -18,7 +18,6 @@ const App = () => {
   return (
     <div className="App">
       <Navigation />
-      <SearchBar />
       <Route path={routes.ADD_RECIPE} component={AddRecipeFormPage} />
       <Route
         exact
@@ -26,6 +25,7 @@ const App = () => {
         render={() => (
           <div>
             <Header />
+            <SearchBar />
             <VisibleRecipeList />
           </div>
         )}

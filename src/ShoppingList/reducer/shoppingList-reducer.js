@@ -1,7 +1,6 @@
 import { database } from '../../firebase';
 import _ from 'lodash';
 import { FIREBASE_API } from '../../apiFirebase/apiFirebase-reducer';
-import * as routes from '../../constants/routes';
 
 //Actions
 export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED =
@@ -161,7 +160,21 @@ export const filterIngredientsToRemove = (recipeId, shoppingListItems) => {
   );
 };
 
-//TODO refactor for API middleware
+const doRemoveAllIngredientsFromRecipe = (snapshot, recipeId, uid) => {
+  const shoppingListItemToRemove = filterIngredientsToRemove(
+    recipeId,
+    snapshot.val()
+  );
+  return Promise.all(
+    shoppingListItemToRemove.map(ingredient =>
+      database
+        .ref(`shoppingList/${uid}/shoppingListItems/`)
+        .child(ingredient.ingredientId)
+        .remove()
+    )
+  );
+};
+
 export const removeShoppingListRecipe = (
   recipeId,
   newShoppingListItemsId,
@@ -174,20 +187,9 @@ export const removeShoppingListRecipe = (
       .then(() =>
         database.ref(`shoppingList/${uid}/shoppingListItems/`).once('value')
       )
-      .then(snapshot => {
-        const shoppingListItemToRemove = filterIngredientsToRemove(
-          recipeId,
-          snapshot.val()
-        );
-        return Promise.all(
-          shoppingListItemToRemove.map(ingredient =>
-            database
-              .ref(`shoppingList/${uid}/shoppingListItems/`)
-              .child(ingredient.ingredientId)
-              .remove()
-          )
-        );
-      })
+      .then(snapshot =>
+        doRemoveAllIngredientsFromRecipe(snapshot, recipeId, uid)
+      )
       .then(() => dispatch(doRemoveShoppingListRecipe()))
       .then(() =>
         dispatch(doReOrderShoppingListItems(newShoppingListItemsId, uid))
@@ -205,17 +207,14 @@ export const doRemoveShoppingListItem = (
   newShoppingListItemsId,
   uid
 ) => {
-  return async dispatch => {
+  return dispatch => {
     // 1) do remove one ingredient from the shoppingListItem => doRemoveShoppingListItem
     // 2) do replace all the shoppingListItemsId by the new oneprovided by the client
     // 3) do fetchShoppingList for this user to get all the changes
     //TODO - fix this hack, each ingredient removed should only be responsible to remove its parent recipe if the ingredient is the last one not all recipesReducer.
     // also we shouldnt fetch the shopping List once more from the DB, we juste need to clear the state accordingly
     if (newShoppingListItemsId.length === 0) {
-      database
-        .ref(`shoppingList/${uid}/shoppingListRecipes/`)
-        .set(null)
-        .then(() => dispatch(doFetchShoppingList(uid)));
+      dispatch(doRemoveAllRecipesfromShoppingList(uid));
     }
     dispatch(doSetReorderShoppingListItem(newShoppingListItemsId));
     removeShoppingListIngredientFromDB(uid, ingredientID)
@@ -224,6 +223,20 @@ export const doRemoveShoppingListItem = (
       .catch(error => {
         console.log(error);
       });
+  };
+};
+
+const doRemoveAllRecipesfromShoppingList = uid => {
+  const shoppingListRef = database.ref(
+    `shoppingList/${uid}/shoppingListRecipes/`
+  );
+  return {
+    type: FIREBASE_API,
+    payload: {
+      firebaseType: 'POST',
+      firebaseMethod: () => shoppingListRef.set(null),
+      onSuccess: () => doFetchShoppingList(uid)
+    }
   };
 };
 
