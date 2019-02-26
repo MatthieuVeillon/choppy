@@ -1,6 +1,6 @@
-import { getRecipes } from "./reducer/recipe-reducer";
-import { connect } from "react-redux";
-import { compose, lifecycle } from "recompose";
+import { doFetchAllRecipes } from './reducer/recipe-reducer';
+import { connect } from 'react-redux';
+import { compose, lifecycle } from 'recompose';
 
 export const withRecipeData = Component =>
   compose(
@@ -8,7 +8,7 @@ export const withRecipeData = Component =>
     lifecycle({
       componentDidMount() {
         const { dispatch } = this.props;
-        dispatch(getRecipes());
+        dispatch(doFetchAllRecipes());
       }
     })
   )(Component);

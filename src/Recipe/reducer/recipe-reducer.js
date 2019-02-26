@@ -1,116 +1,90 @@
-import { database } from "../../firebase";
-import uuid from "uuid/v4";
+import { database } from '../../firebase';
+import uuid from 'uuid/v4';
+import { FIREBASE_API } from '../../apiFirebase/apiFirebase-reducer';
 
 //Actions
-const ADD_RECIPE_REQUESTED = "ADD_RECIPE_REQUESTED";
-export const ADD_RECIPE_FAILED = "ADD_RECIPE_FAILED";
-export const ADD_RECIPE_SUCCEED = "ADD_RECIPE_SUCCEED";
+export const ADD_RECIPE_FAILED = 'ADD_RECIPE_FAILED';
+export const RECIPES_ALL_SET = 'RECIPES_ALL_SET';
+export const RECIPE_NEW_SET = 'RECIPE_NEW_SET';
 
-export const GET_RECIPES_REQUESTED = "GET_RECIPES_REQUESTED";
-export const GET_RECIPES_FAILED = "GET_RECIPES_FAILED";
-export const GET_RECIPES_SUCCESS = "GET_RECIPES_SUCCESS";
+export const GET_RECIPES_REQUESTED = 'GET_RECIPES_REQUESTED';
+export const GET_RECIPES_FAILED = 'GET_RECIPES_FAILED';
+export const GET_RECIPES_SUCCESS = 'GET_RECIPES_SUCCESS';
 
 //Action Creators
-const addRecipeRequested = () => ({ type: ADD_RECIPE_REQUESTED });
-const addRecipeFailed = () => ({ type: ADD_RECIPE_FAILED });
-const addRecipeSucess = () => ({ type: ADD_RECIPE_SUCCEED });
+export const doSetAllRecipes = data => ({
+  type: RECIPES_ALL_SET,
+  payload: {
+    data: data
+  }
+});
 
-const getRecipesRequested = () => ({ type: GET_RECIPES_REQUESTED });
-const getRecipesFailed = () => ({ type: GET_RECIPES_FAILED });
+export const doSetNewRecipe = recipe => ({
+  type: RECIPE_NEW_SET,
+  payload: {
+    data: recipe
+  }
+});
 
-export const getRecipesSuccess = recipes => {
+//Apply functions for reducers
+
+export const applySetAllRecipes = (state, action) => {
   return {
-    type: GET_RECIPES_SUCCESS,
-    recipes,
-    receivedAt: Date.now()
+    ...state,
+    recipes: Object.keys(action.payload.data).map(k => action.payload.data[k])
+  };
+};
+
+export const applySetNewRecipe = (state, action) => {
+  return {
+    ...state,
+    recipes: state.recipes.concat(action.payload.data)
   };
 };
 
 //Reducer
-export const recipes = (state = [], action) => {
+export const recipesReducer = (state = [], action) => {
   switch (action.type) {
-    case ADD_RECIPE_REQUESTED:
-      return {
-        ...state,
-        inProgress: true,
-        error: "",
-        success: ""
-      };
-    case ADD_RECIPE_FAILED:
-      return {
-        ...state,
-        inProgress: false,
-        error: "Error in adding recipes"
-      };
-    case ADD_RECIPE_SUCCEED:
-      return {
-        ...state,
-        inProgress: false,
-        success: "Added recipe"
-      };
-    case GET_RECIPES_REQUESTED:
-      return {
-        ...state,
-        inProgress: true,
-        error: "",
-        success: ""
-      };
-    case GET_RECIPES_FAILED:
-      return {
-        ...state,
-        inProgress: false,
-        error: "Error in getting recipes"
-      };
-    case GET_RECIPES_SUCCESS:
-      return {
-        ...state,
-        recipes: Object.keys(action.recipes).map(k => action.recipes[k]),
-        lastUpdated: action.receivedAt,
-        inProgress: false,
-        success: "Got recipes"
-      };
+    case RECIPES_ALL_SET:
+      return applySetAllRecipes(state, action);
+    case RECIPE_NEW_SET:
+      return applySetNewRecipe(state, action);
     default:
       return state;
   }
 };
 
-// Side effects
+export const addIdToRecipeAndIngredients = (recipe, key) => {
+  recipe.recipeId = key;
+  recipe.ingredients.forEach(ingredient => {
+    ingredient.ingredientId = uuid();
+    ingredient.recipeId = key;
+  });
+  return recipe;
+};
 
-export const addRecipe = (recipe, navigateToHome) => {
-  let key = database.ref("/recipes").push().key;
-  return dispatch => {
-    dispatch(addRecipeRequested());
-    recipe.recipeId = key;
-    recipe.ingredients.forEach(ingredient => {
-      ingredient.ingredientId = uuid();
-      ingredient.recipeId = key;
-    });
-    const recipesRef = database.ref("/recipes/" + key);
-    recipesRef
-      .set(recipe)
-      .then(() => dispatch(addRecipeSucess(recipe)))
-      .then(() => navigateToHome())
-      .catch(error => dispatch(addRecipeFailed()));
+export const doPostRecipe = recipe => {
+  let key = database.ref('/recipes/').push().key;
+  const recipesRef = database.ref('/recipes/' + key);
+  const recipeWithId = addIdToRecipeAndIngredients(recipe, key);
+  return {
+    type: FIREBASE_API,
+    payload: {
+      firebaseType: 'POST',
+      firebaseMethod: () => recipesRef.set(recipeWithId),
+      onSuccess: () => doSetNewRecipe(recipeWithId)
+    }
   };
 };
 
-export const getRecipes = (recipeId = null) => {
-  let ref;
-  if (recipeId) {
-    ref = database.ref(`/recipes/${recipeId}`);
-  }
-  ref = database.ref(`/recipes`);
-
-  return function(dispatch) {
-    dispatch(getRecipesRequested());
-    ref
-      .once("value")
-      .then(snapshot => {
-        dispatch(getRecipesSuccess(snapshot.val()));
-      })
-      .catch(error => {
-        console.log(error);
-        dispatch(getRecipesFailed());
-      });
+export const doFetchAllRecipes = () => {
+  const ref = database.ref(`/recipes`);
+  return {
+    type: FIREBASE_API,
+    payload: {
+      firebaseType: 'GET',
+      firebaseMethod: () => ref.once('value'),
+      onSuccess: doSetAllRecipes
+    }
   };
 };

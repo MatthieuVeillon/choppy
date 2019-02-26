@@ -31,7 +31,7 @@ export const userReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         inProgress: false,
-        error: 'Error in getting recipes'
+        error: 'Error in getting recipesReducer'
       };
     case CREATE_USER_COMPLETED:
       return applySetUsers(state, action);

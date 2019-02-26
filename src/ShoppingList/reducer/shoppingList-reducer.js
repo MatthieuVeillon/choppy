@@ -1,131 +1,124 @@
 import { database } from '../../firebase';
 import _ from 'lodash';
+import { FIREBASE_API } from '../../apiFirebase/apiFirebase-reducer';
+import * as routes from '../../constants/routes';
 
 //Actions
-export const ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED =
-  'ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED';
-export const ADD_INGREDIENTS_SHOPPING_LIST_FAILED =
-  'ADD_INGREDIENTS_SHOPPING_LIST_FAILED';
-export const ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED =
-  'ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED';
-
-export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED =
-  'ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED';
-export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED =
-  'ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED';
 export const ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED =
   'ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED';
-
-export const GET_SHOPPING_LIST_REQUESTED = 'GET_SHOPPING_LIST_REQUESTED';
-export const GET_SHOPPING_LIST_FAILED = 'GET_SHOPPING_LIST_FAILED';
-export const GET_SHOPPING_LIST_SUCCEED = 'GET_SHOPPING_LIST_SUCCEED';
-
-export const SELECT_SHOPPING_LIST_ITEM_STARTED =
-  'SELECT_SHOPPING_LIST_ITEM_STARTED';
-export const SELECT_SHOPPING_LIST_ITEM_FAILED =
-  'SELECT_SHOPPING_LIST_ITEM_FAILED';
-export const SELECT_SHOPPING_LIST_ITEM_FINISHED =
-  'SELECT_SHOPPING_LIST_ITEM_FINISHED';
-
-export const REMOVE_SHOPPING_LIST_ITEM_STARTED =
-  'REMOVE_SHOPPING_LIST_ITEM_STARTED';
-export const REMOVE_SHOPPING_LIST_ITEM_FAILED =
-  'REMOVE_SHOPPING_LIST_ITEM_FAILED';
-export const REMOVE_SHOPPING_LIST_ITEM_FINISHED =
-  'REMOVE_SHOPPING_LIST_ITEM_FINISHED';
-
-export const REMOVE_SHOPPING_LIST_RECIPE_STARTED =
-  'REMOVE_SHOPPING_LIST_RECIPE_STARTED';
-export const REMOVE_SHOPPING_LIST_RECIPE_FAILED =
-  'REMOVE_SHOPPING_LIST_RECIPE_FAILED';
+export const SHOPPING_LIST_SET = 'SHOPPING_LIST_SET';
 export const REMOVE_SHOPPING_LIST_RECIPE_FINISHED =
   'REMOVE_SHOPPING_LIST_RECIPE_FINISHED';
+export const SHOPPING_LIST_ITEM_REORDERED_SET =
+  'SHOPPING_LIST_ITEM_REORDERED_SET';
+export const SHOPPING_LIST_ITEM_TOGGLE = 'SHOPPING_LIST_ITEM_TOGGLE';
 
-export const REORDER_SHOPPING_LIST_ITEM_STARTED =
-  'REORDER_SHOPPING_LIST_ITEM_STARTED';
-export const REORDER_SHOPPING_LIST_ITEM_FAILED =
-  'REORDER_SHOPPING_LIST_ITEM_FAILED';
-export const REORDER_SHOPPING_LIST_ITEM_FINISHED =
-  'REORDER_SHOPPING_LIST_ITEM_FINISHED';
+export const SHOPPING_LIST_ITEM_REMOVE_FROM_STATE =
+  'SHOPPING_LIST_ITEM_REMOVE_FROM_STATE';
 
 // Action Creators
-export const selectShoppingListItemStarted = () => ({
-  type: SELECT_SHOPPING_LIST_ITEM_STARTED
-});
-export const selectShoppingListItemFailed = () => ({
-  type: SELECT_SHOPPING_LIST_ITEM_FAILED
-});
-export const selectShoppingListItemFinished = () => ({
-  type: SELECT_SHOPPING_LIST_ITEM_FINISHED
-});
 
-export const removeShoppingListItemStarted = () => ({
-  type: REMOVE_SHOPPING_LIST_ITEM_STARTED
-});
-export const removeShoppingListItemFailed = () => ({
-  type: REMOVE_SHOPPING_LIST_ITEM_FAILED
-});
-export const removeShoppingListItemFinished = () => ({
-  type: REMOVE_SHOPPING_LIST_ITEM_FINISHED
-});
-
-export const removeShoppingListRecipeStarted = () => ({
-  type: REMOVE_SHOPPING_LIST_RECIPE_STARTED
-});
-export const removeShoppingListRecipeFailed = () => ({
-  type: REMOVE_SHOPPING_LIST_RECIPE_FAILED
-});
-export const removeShoppingListRecipeFinished = () => ({
+export const doRemoveShoppingListRecipe = () => ({
   type: REMOVE_SHOPPING_LIST_RECIPE_FINISHED
 });
 
-const getShoppingListRequested = () => ({ type: GET_SHOPPING_LIST_REQUESTED });
-const getShoppingListFailed = () => ({ type: GET_SHOPPING_LIST_FAILED });
-const getShoppingListSucceed = shoppingList => ({
-  type: GET_SHOPPING_LIST_SUCCEED,
-  shoppingList,
-  receivedAt: Date.now()
-});
-export const addIngredientsToShoppingListRequested = () => ({
-  type: ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED
-});
-export const addIngredientsToShoppingListFailed = () => ({
-  type: ADD_INGREDIENTS_SHOPPING_LIST_FAILED
-});
-export const addIngredientsToShoppingListCompleted = ingredient => ({
-  type: ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED,
-  ingredient
-});
-
-export const addCustomIngredientsToShoppingListRequested = () => ({
-  type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_REQUESTED
-});
-export const addCustomIngredientsToShoppingListFailed = () => ({
-  type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_FAILED
-});
 export const addCustomIngredientsToShoppingListCompleted = ingredient => ({
   type: ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED,
   ingredient
 });
 
-export const reOrderShoppingListItemStarted = () => ({
-  type: REORDER_SHOPPING_LIST_ITEM_STARTED
-});
-export const reOrderShoppingListItemFailed = () => ({
-  type: REORDER_SHOPPING_LIST_ITEM_FAILED
-});
-export const reOrderShoppingListItemFinished = newShoppingListItemsId => ({
-  type: REORDER_SHOPPING_LIST_ITEM_FINISHED,
+export const doSetReorderShoppingListItem = newShoppingListItemsId => ({
+  type: SHOPPING_LIST_ITEM_REORDERED_SET,
   newShoppingListItemsId
 });
 
-//TODO  implement the get selected item status instead of asking for the whole shoppinglist each time we update the pruchase status
+export const doFetchShoppingList = uid => {
+  const ref = database.ref(`/shoppingList/${uid}`);
+  return {
+    type: FIREBASE_API,
+    payload: {
+      firebaseType: 'GET',
+      firebaseMethod: () => ref.once('value'),
+      onSuccess: doSetShoppingList
+    }
+  };
+};
+
+export const doSetShoppingList = shoppingList => ({
+  type: SHOPPING_LIST_SET,
+  payload: {
+    shoppingList
+  }
+});
+
+export const applySetShoppingList = (action, state) => {
+  const shoppingListItems = _.get(
+    action,
+    'payload.shoppingList.shoppingListItems'
+  );
+  const shoppingListItemsId = _.get(
+    action,
+    'payload.shoppingList.shoppingListItemsId'
+  );
+  const shoppingListRecipes = _.get(
+    action,
+    'payload.shoppingList.shoppingListRecipes'
+  );
+  return {
+    ...state,
+    shoppingListItems: shoppingListItems ? shoppingListItems : {},
+    shoppingListItemsId: shoppingListItemsId ? shoppingListItemsId : [],
+    shoppingListRecipes: shoppingListRecipes
+      ? Object.keys(shoppingListRecipes).map(item => shoppingListRecipes[item])
+      : []
+  };
+};
+
+export const doToggleShoppingListItemInState = ({
+  ingredientID,
+  purchased
+}) => ({
+  type: SHOPPING_LIST_ITEM_TOGGLE,
+  payload: {
+    ingredientID,
+    purchased
+  }
+});
+
+export const applyToggleShoppingListItem = (action, state) => ({
+  ...state,
+  shoppingListItems: {
+    ...state.shoppingListItems,
+    [action.payload.ingredientID]: {
+      ...state.shoppingListItems[action.payload.ingredientID],
+      purchased: !action.payload.purchased
+    }
+  }
+});
+
+export const doToggleShoppingListItem = (ingredientID, purchased, uid) => {
+  const shoppingListItemRef = database.ref(
+    `shoppingList/${uid}/shoppingListItems/${ingredientID}/`
+  );
+  return {
+    type: FIREBASE_API,
+    payload: {
+      firebaseType: 'POST',
+      firebaseMethod: () =>
+        shoppingListItemRef.update({ purchased: !purchased }),
+      data: { ingredientID, purchased },
+      onSuccess: () =>
+        doToggleShoppingListItemInState({ ingredientID, purchased })
+    }
+  };
+};
+
+//TODO  implement the get selected item status instead of asking for the whole shoppinglist each time we update the purchase status
 // export const GET_SELECTED_ITEM_STATUS_STARTED = "GET_SELECTED_ITEM_STATUS_STARTED";
 // export const GET_SELECTED_ITEM_STATUS_FINISHED = "GET_SELECTED_ITEM_STATUS_FINISHED";
 // export const GET_SELECTED_ITEM_STATUS_FAILED = "GET_SELECTED_ITEM_STATUS_FAILED";
 
-// reducer
-
+// nested reducer
 export const customIngredient = (state, action) => {
   switch (action.type) {
     case ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED:
@@ -135,88 +128,25 @@ export const customIngredient = (state, action) => {
   }
 };
 
+//TODO finish last appliers
 export const shoppingList = (state = {}, action) => {
   switch (action.type) {
-    case ADD_INGREDIENTS_SHOPPING_LIST_REQUESTED:
-      return {
-        ...state,
-        inProgress: true,
-        error: '',
-        sucess: ''
-      };
-    case ADD_INGREDIENTS_SHOPPING_LIST_FAILED:
-      return {
-        ...state,
-        inProgress: false,
-        error: 'Error in getting shoppingList'
-      };
-    case ADD_INGREDIENTS_SHOPPING_LIST_SUCCEED:
-      return {
-        ...state,
-        inProgress: false,
-        success: 'Added items to shopping List'
-      };
     case ADD_CUSTOM_INGREDIENTS_SHOPPING_LIST_SUCCEED:
       return {
         ...state,
-        shoppingListItems: customIngredient(state.shoppingListItems, action),
-        inProgress: false,
-        success: 'Added custom ingredient to shopping List in DB and in state'
+        shoppingListItems: customIngredient(state.shoppingListItems, action)
       };
-    case GET_SHOPPING_LIST_REQUESTED:
+    case SHOPPING_LIST_SET:
+      return applySetShoppingList(action, state);
+    case SHOPPING_LIST_ITEM_TOGGLE:
+      return applyToggleShoppingListItem(action, state);
+    case SHOPPING_LIST_ITEM_REMOVE_FROM_STATE:
+      return applyRemoveShoppingListItem(state, action);
+    case SHOPPING_LIST_ITEM_REORDERED_SET:
       return {
         ...state,
-        inProgress: true,
-        error: '',
-        success: ''
+        shoppingListItemsId: action.newShoppingListItemsId
       };
-    case GET_SHOPPING_LIST_FAILED:
-      return {
-        ...state,
-        inProgress: false,
-        error: 'Error in getting recipes'
-      };
-    case GET_SHOPPING_LIST_SUCCEED:
-      const shoppingListItems = action.shoppingList
-        ? action.shoppingList.shoppingListItems
-        : {};
-      const shoppingListItemsId = action.shoppingList
-        ? action.shoppingList.shoppingListItemsId
-        : [];
-      const shoppingListRecipes = action.shoppingList
-        ? action.shoppingList.shoppingListRecipes
-        : [];
-
-      return {
-        ...state,
-        shoppingListItems: shoppingListItems !== null ? shoppingListItems : {},
-        shoppingListItemsId:
-          shoppingListItemsId !== null ? shoppingListItemsId : [],
-        shoppingListRecipes:
-          shoppingListRecipes !== null
-            ? Object.keys(shoppingListRecipes).map(
-                item => shoppingListRecipes[item]
-              )
-            : [],
-        lastUpdated: action.receivedAt,
-        inProgress: false,
-        success: 'Got shoppingList'
-      };
-
-    case REORDER_SHOPPING_LIST_ITEM_FAILED:
-      return {
-        ...state,
-        inProgress: false,
-        error: 'Error in reordering shoppingItems'
-      };
-    case REORDER_SHOPPING_LIST_ITEM_FINISHED:
-      return {
-        ...state,
-        shoppingListItemsId: action.newShoppingListItemsId,
-        inProgress: false,
-        error: 'reordering completed'
-      };
-
     default:
       return state;
   }
@@ -231,14 +161,13 @@ export const filterIngredientsToRemove = (recipeId, shoppingListItems) => {
   );
 };
 
+//TODO refactor for API middleware
 export const removeShoppingListRecipe = (
   recipeId,
   newShoppingListItemsId,
   uid
 ) => {
   return dispatch => {
-    dispatch(removeShoppingListRecipeStarted());
-
     database
       .ref(`shoppingList/${uid}/shoppingListRecipes/`)
       .update({ [recipeId]: null })
@@ -259,47 +188,71 @@ export const removeShoppingListRecipe = (
           )
         );
       })
-      .then(() => dispatch(removeShoppingListRecipeFinished()))
+      .then(() => dispatch(doRemoveShoppingListRecipe()))
       .then(() =>
-        dispatch(reOrderShoppingListItems(newShoppingListItemsId, uid))
+        dispatch(doReOrderShoppingListItems(newShoppingListItemsId, uid))
       )
-      .then(() => dispatch(getShoppingList(uid)))
+      .then(() => dispatch(doFetchShoppingList(uid)))
       .catch(error => {
         console.log(error);
-        return dispatch(removeShoppingListRecipeFailed());
       });
   };
 };
 
-export const removeShoppingListItem = (
+//TODO refactor for API middleware
+export const doRemoveShoppingListItem = (
   ingredientID,
   newShoppingListItemsId,
   uid
 ) => {
-  return dispatch => {
-    dispatch(removeShoppingListItemStarted());
-
-    //TODO - fix this hack, each ingredient removed should only be responsible to remove its parent recipe if the ingredient is the last one not all recipes
+  return async dispatch => {
+    // 1) do remove one ingredient from the shoppingListItem => doRemoveShoppingListItem
+    // 2) do replace all the shoppingListItemsId by the new oneprovided by the client
+    // 3) do fetchShoppingList for this user to get all the changes
+    //TODO - fix this hack, each ingredient removed should only be responsible to remove its parent recipe if the ingredient is the last one not all recipesReducer.
+    // also we shouldnt fetch the shopping List once more from the DB, we juste need to clear the state accordingly
     if (newShoppingListItemsId.length === 0) {
-      database.ref(`shoppingList/${uid}/shoppingListRecipes/`).set(null);
+      database
+        .ref(`shoppingList/${uid}/shoppingListRecipes/`)
+        .set(null)
+        .then(() => dispatch(doFetchShoppingList(uid)));
     }
-    dispatch(reOrderShoppingListItemFinished(newShoppingListItemsId));
-    database
-      .ref(`shoppingList/${uid}/shoppingListItems/`)
-      .update({ [ingredientID]: null })
-      .then(() =>
-        database
-          .ref(`shoppingList/${uid}/shoppingListItemsId/`)
-          .set(newShoppingListItemsId)
-      )
-      .then(() => dispatch(removeShoppingListItemFinished()))
-      .then(() => dispatch(getShoppingList(uid)))
+    dispatch(doSetReorderShoppingListItem(newShoppingListItemsId));
+    removeShoppingListIngredientFromDB(uid, ingredientID)
+      .then(() => setNewShoppingListItemsIdInDB(uid, newShoppingListItemsId))
+      .then(() => dispatch(doRemoveShoppingListItemFromState(uid)))
       .catch(error => {
         console.log(error);
-        return dispatch(removeShoppingListItemFailed());
       });
   };
 };
+
+export const applyRemoveShoppingListItem = (state, action) => {
+  return {
+    ...state,
+    shoppingListItems: {
+      ..._.omit(state.shoppingListItems, [action.ingredientID])
+    },
+    shoppingListItemsId: state.shoppingListItemsId.filter(
+      id => id !== action.ingredientID
+    )
+  };
+};
+
+export const doRemoveShoppingListItemFromState = ingredientID => ({
+  type: SHOPPING_LIST_ITEM_REMOVE_FROM_STATE,
+  ingredientID
+});
+
+const removeShoppingListIngredientFromDB = (uid, ingredientID) =>
+  database
+    .ref(`shoppingList/${uid}/shoppingListItems/`)
+    .update({ [ingredientID]: null });
+
+const setNewShoppingListItemsIdInDB = (uid, newShoppingListItemsId) =>
+  database
+    .ref(`shoppingList/${uid}/shoppingListItemsId/`)
+    .set(newShoppingListItemsId);
 
 const concatAllIngredientsIntoOneList = meal => {
   const concatIngredients = {};
@@ -312,50 +265,25 @@ const concatAllIngredientsIntoOneList = meal => {
   return concatIngredients;
 };
 
-export const selectShoppingListItem = (ingredientID, isPurchased, uid) => {
-  const shoppingListItemRef = database.ref(
-    `shoppingList/${uid}/shoppingListItems/${ingredientID}/`
-  );
-  return dispatch => {
-    dispatch(selectShoppingListItemStarted());
-    shoppingListItemRef
-      .update({ purchased: !isPurchased })
-      .then(() => dispatch(selectShoppingListItemFinished()))
-      .then(() => dispatch(getShoppingList(uid)))
-      .catch(error => {
-        console.log(error);
-        return dispatch(selectShoppingListItemFailed());
-      });
-  };
-};
-
-export const addCustomIngredientsToShoppingList = (
+//TODO - tests
+export const doPostCustomIngredientToShoppingList = (
   meal,
-  navigateToShoppingList,
   newShoppingListItemsId,
   uid
 ) => {
-  return dispatch => {
-    dispatch(addCustomIngredientsToShoppingListRequested());
-    const shoppingListRef = database.ref(
-      `shoppingList/${uid}/shoppingListItems/${meal.ingredientId}`
-    );
-    shoppingListRef
-      .update(meal)
-      .then(() =>
-        database
-          .ref(`shoppingList/${uid}/shoppingListItemsId/`)
-          .set(newShoppingListItemsId)
-      )
-      .then(() => dispatch(addCustomIngredientsToShoppingListCompleted(meal)))
-      .then(() =>
-        dispatch(reOrderShoppingListItemFinished(newShoppingListItemsId))
-      )
-      .then(() => navigateToShoppingList())
-      .catch(error => {
-        console.log(error);
-        return dispatch(addCustomIngredientsToShoppingListFailed());
-      });
+  const shoppingListRef = database.ref(
+    `shoppingList/${uid}/shoppingListItems/${meal.ingredientId}`
+  );
+  return {
+    type: FIREBASE_API,
+    payload: {
+      firebaseType: 'POST',
+      firebaseMethod: () => shoppingListRef.update(meal),
+      onSuccess: () => [
+        addCustomIngredientsToShoppingListCompleted(meal),
+        doReOrderShoppingListItems(newShoppingListItemsId, uid)
+      ]
+    }
   };
 };
 
@@ -369,6 +297,7 @@ export const allShoppingListItemsId = (
   return newShoppingListItems;
 };
 
+//TODO refactor for API middleware
 export const addIngredientsToShoppingList = (
   meal,
   shoppingListItemsId,
@@ -376,7 +305,11 @@ export const addIngredientsToShoppingList = (
   navigateToShoppingList
 ) => {
   return dispatch => {
-    dispatch(addIngredientsToShoppingListRequested());
+    // 1) prepare the ingredient into one manageable list
+    // 2) update the recipeList with the recipe
+    // 3) update the shoppingListItems list with all the ingredients themselves
+    // 4) update the shoppingListItemsId to keep the order of the new ingredients added
+
     const ingredientList = concatAllIngredientsIntoOneList(meal);
     const shoppingListRecipesRef = database.ref(
       `shoppingList/${uid}/shoppingListRecipes/` + meal.recipeId
@@ -398,39 +331,22 @@ export const addIngredientsToShoppingList = (
             )
           )
       )
-      .then(() => dispatch(addIngredientsToShoppingListCompleted()))
       .then(() => navigateToShoppingList())
       .catch(error => {
         console.log(error);
-        return dispatch(addIngredientsToShoppingListFailed());
       });
   };
 };
 
-export const getShoppingList = uid => {
-  console.log('uid', uid);
+//not through API middleware as I need to dispactch the state update before the API call is completed otherwise user will see a refresh glitch
+export const doReOrderShoppingListItems = (newShoppingListItemsId, uid) => {
   return dispatch => {
-    dispatch(getShoppingListRequested());
-    return database
-      .ref(`/shoppingList/${uid}`)
-      .once('value')
-      .then(snapshot => dispatch(getShoppingListSucceed(snapshot.val())))
-      .catch(error => {
-        console.log(error);
-        dispatch(getShoppingListFailed());
-      });
-  };
-};
-
-export const reOrderShoppingListItems = (newShoppingListItemsId, uid) => {
-  return dispatch => {
-    dispatch(reOrderShoppingListItemFinished(newShoppingListItemsId));
+    dispatch(doSetReorderShoppingListItem(newShoppingListItemsId));
     return database
       .ref(`shoppingList/${uid}/shoppingListItemsId/`)
       .set(newShoppingListItemsId)
       .catch(error => {
         console.log(error);
-        dispatch(reOrderShoppingListItemFailed());
       });
   };
 };

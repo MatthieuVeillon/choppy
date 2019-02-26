@@ -3,8 +3,6 @@ import { SearchBarBase } from './SearchBar';
 import { render, fireEvent } from 'react-testing-library';
 
 describe('SearchBar', function() {
-  //test in isolation
-
   it('allow the user to search for a recipe', () => {
     //arrange
     const props = {

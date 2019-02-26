@@ -1,30 +1,30 @@
-import React, { Component } from "react";
-import { ImageInput } from "../FormInput/ImageInput";
-import { CheckboxSlider } from "../CheckboxSlider";
-import { connect } from "react-redux";
-import { storageRef } from "../firebase/index";
-import { IngredientField } from "../FormInput/IngredientField";
-import { CookingStepField } from "../FormInput/CookingStepField";
-import { addRecipe } from "../Recipe/reducer/recipe-reducer";
-import { Box, Button, FormField } from "../BasicComponents/Box";
-import { Form } from "../BasicComponents/Form";
-import { branch, renderComponent, compose } from "recompose";
-import _ from "lodash";
-import { SignInWithFirebase } from "../authentication/SignInWithFireBaseUI";
+import React, { Component } from 'react';
+import { ImageInput } from '../FormInput/ImageInput';
+import { CheckboxSlider } from '../CheckboxSlider';
+import { connect } from 'react-redux';
+import { storageRef } from '../firebase/index';
+import { IngredientField } from '../FormInput/IngredientField';
+import { CookingStepField } from '../FormInput/CookingStepField';
+import { doPostRecipe } from '../Recipe/reducer/recipe-reducer';
+import { Box, Button, FormField } from '../BasicComponents/Box';
+import { Form } from '../BasicComponents/Form';
+import { branch, renderComponent, compose } from 'recompose';
+import _ from 'lodash';
+import { SignInWithFirebase } from '../authentication/SignInWithFireBaseUI';
 
 const initialState = {
-  title: "",
-  ingredients: [{ name: "", quantity: 0, measure: "" }],
-  cookingSteps: [{ name: "" }],
+  title: '',
+  ingredients: [{ name: '', quantity: 0, measure: '' }],
+  cookingSteps: [{ name: '' }],
   categories: {
     vegan: false,
     healthy: false
   },
   canBeFrozen: false,
-  cookingTime: "",
-  uploadImageUrl: "",
-  defaultPortionNumber: "",
-  pricePerPortion: ""
+  cookingTime: '',
+  uploadImageUrl: '',
+  defaultPortionNumber: '',
+  pricePerPortion: ''
 };
 
 class AddRecipeForm extends Component {
@@ -36,14 +36,14 @@ class AddRecipeForm extends Component {
   handleSubmit = event => {
     event.preventDefault();
     const recipe = this.state;
-    this.props.addRecipe(recipe, () => this.props.history.push("/"));
+    this.props.addRecipe(recipe, () => this.props.history.push('/'));
     this.setState(initialState);
   };
 
   handleChange = event => {
     const target = event.target;
     this.setState(() => ({
-      [target.id]: target.type === "checkbox" ? target.checked : target.value
+      [target.id]: target.type === 'checkbox' ? target.checked : target.value
     }));
   };
 
@@ -88,7 +88,9 @@ class AddRecipeForm extends Component {
 
   handleRemoveItem = (index, object) => {
     this.setState({
-      [object]: this.state[object].filter((item, secondIndex) => index !== secondIndex)
+      [object]: this.state[object].filter(
+        (item, secondIndex) => index !== secondIndex
+      )
     });
   };
 
@@ -104,7 +106,15 @@ class AddRecipeForm extends Component {
 
     return (
       <Form onSubmit={this.handleSubmit}>
-        <FormField type="text" value={title} onChange={this.handleChange} id="title" placeholder={"title"} required width="250px" />
+        <FormField
+          type="text"
+          value={title}
+          onChange={this.handleChange}
+          id="title"
+          placeholder={'title'}
+          required
+          width="250px"
+        />
 
         {this.state.ingredients.map((ingredient, index) => (
           <IngredientField
@@ -116,7 +126,11 @@ class AddRecipeForm extends Component {
           />
         ))}
 
-        <button type="button" onClick={() => this.handleAddItem("ingredients")} className="small">
+        <button
+          type="button"
+          onClick={() => this.handleAddItem('ingredients')}
+          className="small"
+        >
           Add Ingredient
         </button>
 
@@ -130,7 +144,11 @@ class AddRecipeForm extends Component {
           />
         ))}
 
-        <button type="button" onClick={() => this.handleAddItem("cookingSteps")} className="small">
+        <button
+          type="button"
+          onClick={() => this.handleAddItem('cookingSteps')}
+          className="small"
+        >
           Add Step
         </button>
 
@@ -140,7 +158,7 @@ class AddRecipeForm extends Component {
           value={cookingTime}
           onChange={this.handleChange}
           id="cookingTime"
-          placeholder={"cooking time in min"}
+          placeholder={'cooking time in min'}
           required
         />
 
@@ -150,7 +168,7 @@ class AddRecipeForm extends Component {
           value={pricePerPortion}
           onChange={this.handleChange}
           id="pricePerPortion"
-          placeholder={"price per portion"}
+          placeholder={'price per portion'}
           required
         />
 
@@ -165,11 +183,23 @@ class AddRecipeForm extends Component {
         />
 
         <Box top="8px" width="300px" spaceBetween>
-          <CheckboxSlider name="canBeFrozen" onChange={this.handleChange} value={canBeFrozen} />
-          <CheckboxSlider name="Vegan" onChange={event => this.handleChangeInNestedState(event, "categories", "vegan")} value={vegan} />
+          <CheckboxSlider
+            name="canBeFrozen"
+            onChange={this.handleChange}
+            value={canBeFrozen}
+          />
+          <CheckboxSlider
+            name="Vegan"
+            onChange={event =>
+              this.handleChangeInNestedState(event, 'categories', 'vegan')
+            }
+            value={vegan}
+          />
           <CheckboxSlider
             name="Healthy"
-            onChange={event => this.handleChangeInNestedState(event, "categories", "healthy")}
+            onChange={event =>
+              this.handleChangeInNestedState(event, 'categories', 'healthy')
+            }
             value={healthy}
           />
         </Box>
@@ -183,14 +213,14 @@ class AddRecipeForm extends Component {
 }
 const mapDispatchToProps = dispatch => {
   return {
-    addRecipe: (recipe, navigateToHome) => dispatch(addRecipe(recipe, navigateToHome))
+    addRecipe: (recipe, navigateToHome) => dispatch(doPostRecipe(recipe))
   };
 };
 
 export const AddRecipeFormPage = compose(
   connect(
     ({ sessionState }) => ({
-      uid: _.get(sessionState, "authUser.uid")
+      uid: _.get(sessionState, 'authUser.uid')
     }),
     mapDispatchToProps
   ),
