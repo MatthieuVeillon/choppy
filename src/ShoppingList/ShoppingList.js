@@ -10,12 +10,11 @@ import {
 import _ from 'lodash';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
-import ClosedIcon from '@material-ui/icons/Close';
+import Delete from '@material-ui/icons/DeleteOutlined';
 import {
   doFetchShoppingList,
   doRemoveShoppingListItem,
   removeShoppingListRecipe,
-  doToggleShoppingListItemInState,
   doReOrderShoppingListItems,
   doToggleShoppingListItem
 } from './reducer/shoppingList-reducer';
@@ -32,44 +31,57 @@ export const ShoppingListItem = ({
 }) => {
   return (
     <Draggable draggableId={ingredient.ingredientId} index={index}>
-      {provided => (
-        <Box
+      {(provided, snapshot) => (
+        <ShoppingListItemWrapper
+          spaceBetween
+          height={'40px'}
+          purchased={ingredient.purchased}
+          alignItems
+          isDragging={snapshot.isDragging}
+          width={'100%'}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           innerRef={provided.innerRef}
         >
-          <ShoppingListItemWrapper
-            width={'300px'}
-            height={'40px'}
-            alignItems
-            shadow
-            border
-            purchased={ingredient.purchased}
+          <Box
             onClick={() =>
               onClickHandler(ingredient.ingredientId, ingredient.purchased)
             }
           >
             {ingredient.name} {ingredient.quantity} {ingredient.measure}
-          </ShoppingListItemWrapper>
+          </Box>
           <Box
-            alignItems
+            right={'5px'}
             onClick={() => onRemoveHandler(ingredient.ingredientId)}
           >
-            <ClosedIcon />
+            <Delete style={{ fontSize: 18 }} />
           </Box>
-        </Box>
+        </ShoppingListItemWrapper>
       )}
     </Draggable>
   );
 };
+
+export const ShoppingListRecipeCard = ({ meal, onRemoveHandler }) => (
+  <Box width="100px" height="100px">
+    <img
+      style={{ height: '100%', width: '100%', objectFit: 'cover' }}
+      src={meal.uploadImageUrl}
+      alt={meal.title}
+    />
+    <Box right={'5px'} onClick={() => onRemoveHandler(meal.recipeId)}>
+      <Delete />
+    </Box>
+  </Box>
+);
 
 export const ShoppingListRecipe = ({ meal, onRemoveHandler }) => (
   <Box>
     <li key={meal.id}>
       {meal.title} - {meal.portion} portions
     </li>
-    <Box onClick={() => onRemoveHandler(meal.recipeId)}>
-      <ClosedIcon />
+    <Box right={'5px'} onClick={() => onRemoveHandler(meal.recipeId)}>
+      <Delete />
     </Box>
   </Box>
 );
@@ -83,15 +95,15 @@ const ShoppingListBase = ({
 }) => (
   <div>
     <h4>Recipe</h4>
-    <ul>
+    <Box spaceAround>
       {shoppingList.shoppingListRecipes.map(meal => (
-        <ShoppingListRecipe
+        <ShoppingListRecipeCard
           key={meal.recipeId}
           meal={meal}
           onRemoveHandler={onRemoveRecipeHandler}
         />
       ))}
-    </ul>
+    </Box>
     <h4>Ingredients from recipes</h4>
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId={'recipeList-1'}>
@@ -121,7 +133,6 @@ const ShoppingListBase = ({
         )}
       </Droppable>
     </DragDropContext>
-    <h4> Custom ingredients </h4>
     <AddCustomIngredient shoppingList={shoppingList} />
   </div>
 );
@@ -197,10 +208,16 @@ export const ShoppingList = compose(
 )(ShoppingListBase);
 
 const ShoppingListItemWrapper = styled(Box)`
-  margin-bottom: 3px;
   &:hover {
     cursor: pointer;
   }
   text-decoration: ${({ purchased }) => (purchased ? 'line-through' : 'none')};
-  background-color: white;
+  border-top: 1px solid lightgrey;
+  border-bottom: ${({ isDragging }) =>
+    isDragging ? '1px solid lightgrey' : 'none'};
+  &:last-child {
+    border-bottom: 1px solid lightgrey;
+  }
+  background-color: ${({ purchased }) => (purchased ? 'WhiteSmoke' : 'white')};
+  color: ${({ purchased }) => (purchased ? 'LightGray' : 'black')};
 `;

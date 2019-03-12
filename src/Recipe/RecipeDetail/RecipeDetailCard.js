@@ -1,30 +1,49 @@
-import React from "react";
-import styled from "styled-components";
-import _ from "lodash";
-import { branch, compose, renderNothing, withHandlers, withProps, withState } from "recompose";
-import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
-import { addIngredientsToShoppingList } from "../../ShoppingList/reducer/shoppingList-reducer";
-import { Box, Button } from "../../BasicComponents/Box";
-import * as routes from "../../constants/routes";
-import { withRecipeData } from "../withRecipeData";
-import Typography from "@material-ui/core/es/Typography/Typography";
-import TextField from "@material-ui/core/es/TextField/TextField";
-import withStyles from "@material-ui/core/es/styles/withStyles";
+import React from 'react';
+import styled from 'styled-components';
+import _ from 'lodash';
+import {
+  branch,
+  compose,
+  renderNothing,
+  withHandlers,
+  withProps,
+  withState
+} from 'recompose';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import { addIngredientsToShoppingList } from '../../ShoppingList/reducer/shoppingList-reducer';
+import { Box, Button } from '../../BasicComponents/Box';
+import * as routes from '../../constants/routes';
+import { withRecipeData } from '../withRecipeData';
+import Typography from '@material-ui/core/es/Typography/Typography';
+import TextField from '@material-ui/core/es/TextField/TextField';
+import withStyles from '@material-ui/core/es/styles/withStyles';
 
 //########################################################
 //                 RecipeDetailCardHeader
 //########################################################
-const RecipeDetailCardHeader = ({ canBeFrozen, cookingTime, pricePerPortion }) => {
+const RecipeDetailCardHeader = ({
+  canBeFrozen,
+  cookingTime,
+  pricePerPortion
+}) => {
   return (
     <RecipeDetailCardHeaderContainer>
       <Box vertical>
         <Typography variant="subheading">{`Ingredients: add number`}</Typography>
-        {canBeFrozen && <Typography variant="subheading"> can be frozen</Typography>}
+        {canBeFrozen && (
+          <Typography variant="subheading"> can be frozen</Typography>
+        )}
       </Box>
       <Box vertical>
-        <Typography variant="subheading"> cooking Time : {cookingTime}</Typography>
-        <Typography variant="subheading"> portion price : {pricePerPortion}</Typography>
+        <Typography variant="subheading">
+          {' '}
+          cooking Time : {cookingTime}
+        </Typography>
+        <Typography variant="subheading">
+          {' '}
+          portion price : {pricePerPortion}
+        </Typography>
       </Box>
     </RecipeDetailCardHeaderContainer>
   );
@@ -70,7 +89,14 @@ const RecipeCookingSteps = ({ cookingSteps }) => (
 //########################################################
 //                 AddToShoppingListForm
 //########################################################
-export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandler, ingredients, defaultPortionNumber, uid }) => (
+export const AddToShoppingListFormBase = ({
+  handleSubmit,
+  portion,
+  onChangeHandler,
+  ingredients,
+  defaultPortionNumber,
+  uid
+}) => (
   <form onSubmit={handleSubmit}>
     <TextField
       required
@@ -84,40 +110,66 @@ export const AddToShoppingListFormBase = ({ handleSubmit, portion, onChangeHandl
       }}
       margin="normal"
     />
-    <AddToShoppingListButton disabled={!uid} portion={portion} ingredients={ingredients} defaultPortionNumber={defaultPortionNumber} />
+    <AddToShoppingListButton
+      disabled={!uid}
+      portion={portion}
+      ingredients={ingredients}
+      defaultPortionNumber={defaultPortionNumber}
+    />
     {!uid && <p>Please login to use the shopping list feature</p>}
   </form>
 );
 
 export const AddToShoppingListForm = compose(
-  withState("portion", "updatePortion", ({ defaultPortionNumber }) => defaultPortionNumber),
+  withState(
+    'portion',
+    'updatePortion',
+    ({ defaultPortionNumber }) => defaultPortionNumber
+  ),
   withHandlers({
-    onChangeHandler: ({ updatePortion }) => event => updatePortion(event.target.value)
+    onChangeHandler: ({ updatePortion }) => event =>
+      updatePortion(event.target.value)
   }),
-  withProps(({ portion, defaultPortionNumber, ingredients, recipeId, title }) => {
-    let meal = {};
-    let newIngredients = [];
-    const quantityChanged = Number(portion) !== defaultPortionNumber;
-    if (quantityChanged) {
-      newIngredients = ingredients.map(ingredient => {
-        return {
-          ...ingredient,
-          ...{
-            quantity: Number(ingredient.quantity) * (Number(portion) / Number(defaultPortionNumber))
-          }
-        };
-      });
+  withProps(
+    ({
+      portion,
+      defaultPortionNumber,
+      ingredients,
+      recipeId,
+      title,
+      uploadImageUrl
+    }) => {
+      let meal = {};
+      let newIngredients = [];
+      const quantityChanged = Number(portion) !== defaultPortionNumber;
+      if (quantityChanged) {
+        newIngredients = ingredients.map(ingredient => {
+          return {
+            ...ingredient,
+            ...{
+              quantity:
+                Number(ingredient.quantity) *
+                (Number(portion) / Number(defaultPortionNumber))
+            }
+          };
+        });
+      }
+      meal.ingredientsWithQuantityUpdated = quantityChanged
+        ? newIngredients
+        : ingredients;
+      meal.portion = Number(portion);
+      meal.recipeId = recipeId;
+      meal.title = title;
+      meal.uploadImageUrl = uploadImageUrl;
+      return { meal };
     }
-    meal.ingredientsWithQuantityUpdated = quantityChanged ? newIngredients : ingredients;
-    meal.portion = Number(portion);
-    meal.recipeId = recipeId;
-    meal.title = title;
-    return { meal };
-  }),
+  ),
   connect(({ shoppingList, sessionState }) => {
     const computedProps = {};
     if (shoppingList.shoppingListItems) {
-      computedProps.shoppingListItemsId = Object.keys(shoppingList.shoppingListItems);
+      computedProps.shoppingListItemsId = Object.keys(
+        shoppingList.shoppingListItems
+      );
     }
     if (sessionState.authUser !== null) {
       computedProps.uid = sessionState.authUser.uid;
@@ -126,9 +178,19 @@ export const AddToShoppingListForm = compose(
   }),
   withRouter,
   withHandlers({
-    handleSubmit: ({ meal, dispatch, shoppingListItemsId, history, uid }) => event => {
+    handleSubmit: ({
+      meal,
+      dispatch,
+      shoppingListItemsId,
+      history,
+      uid
+    }) => event => {
       event.preventDefault();
-      return dispatch(addIngredientsToShoppingList(meal, shoppingListItemsId, uid, () => history.push(routes.SHOPPING_LIST)));
+      return dispatch(
+        addIngredientsToShoppingList(meal, shoppingListItemsId, uid, () =>
+          history.push(routes.SHOPPING_LIST)
+        )
+      );
     }
   })
 )(AddToShoppingListFormBase);
@@ -138,7 +200,12 @@ export const AddToShoppingListForm = compose(
 //########################################################
 
 export const AddToShoppingListButtonBase = ({ classes, disabled }) => (
-  <Button disabled={disabled} type="submit" className={classes.Button} variant="raised">
+  <Button
+    disabled={disabled}
+    type="submit"
+    className={classes.Button}
+    variant="raised"
+  >
     Add To Shopping Card
   </Button>
 );
@@ -146,12 +213,14 @@ export const AddToShoppingListButtonBase = ({ classes, disabled }) => (
 const styles = {
   Button: {
     width: 180,
-    marginTop: "20px",
-    alignSelf: "center"
+    marginTop: '20px',
+    alignSelf: 'center'
   }
 };
 
-export const AddToShoppingListButton = compose(withStyles(styles))(AddToShoppingListButtonBase);
+export const AddToShoppingListButton = compose(withStyles(styles))(
+  AddToShoppingListButtonBase
+);
 
 //########################################################
 //                 recipeDetailCard
@@ -173,25 +242,40 @@ const RecipeDetailCardBase = ({
     <div>
       <HeaderImage src={uploadImageUrl} />
     </div>
-    <RecipeDetailCardHeader canBeFrozen={canBeFrozen} cookingTime={cookingTime} pricePerPortion={pricePerPortion} />
+    <RecipeDetailCardHeader
+      canBeFrozen={canBeFrozen}
+      cookingTime={cookingTime}
+      pricePerPortion={pricePerPortion}
+    />
     <RecipeDetailCardBody>
       <div>
         <Typography variant="display1">{title}</Typography>
       </div>
       <div>
-        <Typography variant="subheading">Ingredients {defaultPortionNumber}</Typography>
+        <Typography variant="subheading">
+          Ingredients {defaultPortionNumber}
+        </Typography>
         <RecipeDetailIngredientList ingredients={ingredients} />
       </div>
       <RecipeCookingSteps cookingSteps={cookingSteps} />
     </RecipeDetailCardBody>
-    <AddToShoppingListForm defaultPortionNumber={defaultPortionNumber} ingredients={ingredients} title={title} recipeId={recipeId} />
+    <AddToShoppingListForm
+      defaultPortionNumber={defaultPortionNumber}
+      ingredients={ingredients}
+      title={title}
+      recipeId={recipeId}
+      uploadImageUrl={uploadImageUrl}
+    />
   </RecipeDetailCardContainer>
 );
 
 export const RecipeDetailCard = compose(
   withRecipeData,
   connect((state, ownProps) => ({
-    recipeDisplayed: _.find(state.recipes.recipes, ["recipeId", ownProps.match.params.recipeId])
+    recipeDisplayed: _.find(state.recipes.recipes, [
+      'recipeId',
+      ownProps.match.params.recipeId
+    ])
   })),
   branch(({ recipeDisplayed }) => !recipeDisplayed, renderNothing)
 )(RecipeDetailCardBase);

@@ -259,8 +259,8 @@ export const doRemoveShoppingListItemFromState = ingredientID => ({
 
 const removeShoppingListIngredientFromDB = (uid, ingredientID) =>
   database
-    .ref(`shoppingList/${uid}/shoppingListItems/`)
-    .update({ [ingredientID]: null });
+    .ref(`shoppingList/${uid}/shoppingListItems/${ingredientID}`)
+    .set(null);
 
 const setNewShoppingListItemsIdInDB = (uid, newShoppingListItemsId) =>
   database

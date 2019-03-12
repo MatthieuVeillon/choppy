@@ -1,10 +1,10 @@
-import { connect } from "react-redux";
-import Link from "../Link";
-import { setCategoryFilter } from "./categoryFilter-reducer";
+import { connect } from 'react-redux';
+import Link from '../Link';
+import { setCategoryFilter } from './categoryFilter-reducer';
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    active: ownProps.filter === state.categoryFilter
+    active: ownProps.category === state.categoryFilter
   };
 };
 

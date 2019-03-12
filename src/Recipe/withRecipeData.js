@@ -4,11 +4,13 @@ import { compose, lifecycle } from 'recompose';
 
 export const withRecipeData = Component =>
   compose(
-    connect(),
+    connect(state => ({ areRecipesLoaded: state.recipes.recipes })),
     lifecycle({
       componentDidMount() {
-        const { dispatch } = this.props;
-        dispatch(doFetchAllRecipes());
+        const { dispatch, areRecipesLoaded } = this.props;
+        if (!areRecipesLoaded) {
+          dispatch(doFetchAllRecipes());
+        }
       }
     })
   )(Component);

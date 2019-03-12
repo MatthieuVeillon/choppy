@@ -1,10 +1,10 @@
-import styled from "styled-components";
+import styled from 'styled-components';
 
 export const Form = styled.form`
     width=100%;
-    padding: 20px;
+    padding:${props => (props.padding ? props.padding : '0px')};
     display: flex;
-    flex-direction: column;
+    flex-direction: ${props => (props.horizontal ? 'row' : 'column')};
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: ${props => (props.stretch ? props.stretch : 'flex-start')};
 `;

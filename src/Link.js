@@ -1,22 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 
 const Link = ({ active, children, onClick }) => {
-  if (active) {
-    return <span>{children}</span>;
-  }
-  const [isSelected, setIsSelected] = useState(false);
-
   return (
     <button
       style={
-        isSelected
+        active
           ? { backgroundColor: 'darkgray' }
           : { backgroundColor: undefined }
       }
       onClick={e => {
         e.preventDefault();
-        setIsSelected(!isSelected);
         onClick();
       }}
     >

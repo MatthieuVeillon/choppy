@@ -6,7 +6,7 @@ export const apiFirebaseMiddleware = ({ dispatch }) => next => action => {
   if (action.type !== FIREBASE_API) {
     return;
   }
-  const { firebaseMethod, onSuccess, firebaseType, data } = action.payload;
+  const { firebaseMethod, onSuccess, firebaseType } = action.payload;
   if (firebaseType === 'GET') {
     firebaseMethod().then(snapshot => dispatch(onSuccess(snapshot.val())));
   }
