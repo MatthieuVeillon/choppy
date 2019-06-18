@@ -5,7 +5,8 @@ import {
   lifecycle,
   renderComponent,
   renderNothing,
-  withHandlers
+  withHandlers,
+  withProps
 } from 'recompose';
 import _ from 'lodash';
 import { connect } from 'react-redux';
@@ -91,7 +92,8 @@ const ShoppingListBase = ({
   onClickIngredientHandler,
   onRemoveIngredientHandler,
   onRemoveRecipeHandler,
-  onDragEnd
+  onDragEnd,
+  uid
 }) => (
   <div>
     <h4>Recipe</h4>
@@ -133,7 +135,7 @@ const ShoppingListBase = ({
         )}
       </Droppable>
     </DragDropContext>
-    <AddCustomIngredient shoppingList={shoppingList} />
+    <AddCustomIngredient shoppingList={shoppingList} uid={uid} />
   </div>
 );
 
@@ -185,10 +187,10 @@ const onRemoveRecipeHandler = ({ dispatch, shoppingList, uid }) => recipeId => {
 };
 
 export const ShoppingList = compose(
-  connect(({ sessionState }) => ({
-    uid: _.get(sessionState, 'authUser.uid')
+  connect(),
+  withProps(({ authUser }) => ({
+    uid: authUser.uid
   })),
-  branch(({ uid }) => !uid, renderComponent(SignInWithFirebase)),
   lifecycle({
     componentDidMount() {
       this.props.dispatch(doFetchShoppingList(this.props.uid));

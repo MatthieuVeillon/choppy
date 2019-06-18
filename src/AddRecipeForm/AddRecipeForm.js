@@ -27,7 +27,7 @@ const initialState = {
   pricePerPortion: ''
 };
 
-class AddRecipeForm extends Component {
+export class AddRecipeFormPage extends Component {
   constructor(props) {
     super();
     this.state = initialState;
@@ -216,13 +216,3 @@ const mapDispatchToProps = dispatch => {
     addRecipe: (recipe, navigateToHome) => dispatch(doPostRecipe(recipe))
   };
 };
-
-export const AddRecipeFormPage = compose(
-  connect(
-    ({ sessionState }) => ({
-      uid: _.get(sessionState, 'authUser.uid')
-    }),
-    mapDispatchToProps
-  ),
-  branch(({ uid }) => !uid, renderComponent(SignInWithFirebase))
-)(AddRecipeForm);

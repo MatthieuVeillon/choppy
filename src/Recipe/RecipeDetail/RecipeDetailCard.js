@@ -1,23 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
-import _ from 'lodash';
-import {
-  branch,
-  compose,
-  renderNothing,
-  withHandlers,
-  withProps,
-  withState
-} from 'recompose';
+import { compose, withHandlers, withProps, withState } from 'recompose';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { addIngredientsToShoppingList } from '../../ShoppingList/reducer/shoppingList-reducer';
 import { Box, Button } from '../../BasicComponents/Box';
 import * as routes from '../../constants/routes';
-import { withRecipeData } from '../withRecipeData';
 import Typography from '@material-ui/core/es/Typography/Typography';
 import TextField from '@material-ui/core/es/TextField/TextField';
 import withStyles from '@material-ui/core/es/styles/withStyles';
+import { GlobalContext } from '../../App';
+import { recipesContext } from '../../Context/RecipesContext';
+import { userContext } from '../../Context/UserContext';
 
 //########################################################
 //                 RecipeDetailCardHeader
@@ -164,15 +158,15 @@ export const AddToShoppingListForm = compose(
       return { meal };
     }
   ),
-  connect(({ shoppingList, sessionState }) => {
+  connect(({ shoppingList }, { authUser }) => {
     const computedProps = {};
     if (shoppingList.shoppingListItems) {
       computedProps.shoppingListItemsId = Object.keys(
         shoppingList.shoppingListItems
       );
     }
-    if (sessionState.authUser !== null) {
-      computedProps.uid = sessionState.authUser.uid;
+    if (authUser !== null) {
+      computedProps.uid = authUser.uid;
     }
     return computedProps;
   }),
@@ -225,8 +219,15 @@ export const AddToShoppingListButton = compose(withStyles(styles))(
 //########################################################
 //                 recipeDetailCard
 //########################################################
-const RecipeDetailCardBase = ({
-  recipeDisplayed: {
+export const RecipeDetailCard = ({ match }) => {
+  const { recipes } = useContext(recipesContext);
+  const { authUser } = useContext(userContext);
+
+  const recipeDisplayed = recipes.filter(
+    recipe => recipe.recipeId === match.params.recipeId
+  )[0];
+
+  const {
     uploadImageUrl,
     title,
     canBeFrozen,
@@ -236,49 +237,41 @@ const RecipeDetailCardBase = ({
     defaultPortionNumber,
     cookingSteps,
     recipeId
-  }
-}) => (
-  <RecipeDetailCardContainer>
-    <div>
-      <HeaderImage src={uploadImageUrl} />
-    </div>
-    <RecipeDetailCardHeader
-      canBeFrozen={canBeFrozen}
-      cookingTime={cookingTime}
-      pricePerPortion={pricePerPortion}
-    />
-    <RecipeDetailCardBody>
-      <div>
-        <Typography variant="display1">{title}</Typography>
-      </div>
-      <div>
-        <Typography variant="subheading">
-          Ingredients {defaultPortionNumber}
-        </Typography>
-        <RecipeDetailIngredientList ingredients={ingredients} />
-      </div>
-      <RecipeCookingSteps cookingSteps={cookingSteps} />
-    </RecipeDetailCardBody>
-    <AddToShoppingListForm
-      defaultPortionNumber={defaultPortionNumber}
-      ingredients={ingredients}
-      title={title}
-      recipeId={recipeId}
-      uploadImageUrl={uploadImageUrl}
-    />
-  </RecipeDetailCardContainer>
-);
+  } = recipeDisplayed;
 
-export const RecipeDetailCard = compose(
-  withRecipeData,
-  connect((state, ownProps) => ({
-    recipeDisplayed: _.find(state.recipes.recipes, [
-      'recipeId',
-      ownProps.match.params.recipeId
-    ])
-  })),
-  branch(({ recipeDisplayed }) => !recipeDisplayed, renderNothing)
-)(RecipeDetailCardBase);
+  return (
+    <RecipeDetailCardContainer>
+      <div>
+        <HeaderImage src={uploadImageUrl} />
+      </div>
+      <RecipeDetailCardHeader
+        canBeFrozen={canBeFrozen}
+        cookingTime={cookingTime}
+        pricePerPortion={pricePerPortion}
+      />
+      <RecipeDetailCardBody>
+        <div>
+          <Typography variant="display1">{title}</Typography>
+        </div>
+        <div>
+          <Typography variant="subheading">
+            Ingredients {defaultPortionNumber}
+          </Typography>
+          <RecipeDetailIngredientList ingredients={ingredients} />
+        </div>
+        <RecipeCookingSteps cookingSteps={cookingSteps} />
+      </RecipeDetailCardBody>
+      <AddToShoppingListForm
+        defaultPortionNumber={defaultPortionNumber}
+        ingredients={ingredients}
+        title={title}
+        recipeId={recipeId}
+        uploadImageUrl={uploadImageUrl}
+        authUser={authUser}
+      />
+    </RecipeDetailCardContainer>
+  );
+};
 
 const RecipeDetailCardBody = styled.div`
   display: flex;

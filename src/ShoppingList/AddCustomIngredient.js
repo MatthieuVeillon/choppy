@@ -45,9 +45,6 @@ export const AddCustomIngredient = compose(
     ingredient.recipeId = 'custom';
     return { ingredient };
   }),
-  connect(({ sessionState }) => ({
-    uid: sessionState.authUser.uid
-  })),
   withHandlers({
     handleSubmit: ({
       dispatch,

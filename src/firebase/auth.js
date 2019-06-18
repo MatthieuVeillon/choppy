@@ -1,6 +1,6 @@
 import { auth } from './firebase.js';
 import * as firebaseui from 'firebaseui';
-const firebase = require('firebase');
+import firebase from 'firebase';
 
 // Sign Up
 export const doCreateUserWithEmailAndPassword = (email, password) =>
@@ -11,7 +11,9 @@ export const doSignInWithEmailAndPassword = (email, password) =>
   auth.signInWithEmailAndPassword(email, password);
 
 // Sign out
-export const doSignOut = () => auth.signOut();
+export const doSignOut = () => {
+  return auth.signOut();
+};
 
 // Password Reset
 export const doPasswordReset = email => auth.sendPasswordResetEmail(email);
