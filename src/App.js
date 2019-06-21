@@ -9,12 +9,12 @@ import { AddRecipeFormPage } from './AddRecipeForm/AddRecipeForm';
 import { SignInWithFirebase } from './authentication/SignInWithFireBaseUI';
 import { RecipePage } from './Recipe/RecipePage';
 import { useWhyDidYouUpdate } from './utils/useWhyDidYouUpdate';
-import './App.css';
+// import './App.css';
 import { recipesContext, RecipesProvider } from './Context/RecipesContext';
 import { userContext, UserProvider } from './Context/UserContext';
 
-const App = props => {
-  useWhyDidYouUpdate('App', props);
+export const App = () => {
+  //useWhyDidYouUpdate("App", props);
 
   return (
     <RecipesProvider>
@@ -23,7 +23,7 @@ const App = props => {
           <Navigation />
           <Route path={routes.ADD_RECIPE} component={AddRecipePage} />
           <Route exact path={routes.HOME} component={RecipePage} />
-          <Route path={routes.SHOPPING_LIST} compoment={ShoppingListPage} />
+          <Route path={routes.SHOPPING_LIST} component={ShoppingListPage} />
           <Route
             path="/recipe/:recipeId"
             render={props => <RecipeDetailPage {...props} />}
@@ -54,5 +54,4 @@ const RecipeDetailPage = ({ props }) => {
   const { recipes } = useContext(recipesContext);
   return recipes.length > 0 && <RecipeDetailCard {...props} />;
 };
-
-export default App;
+console.log(3);
