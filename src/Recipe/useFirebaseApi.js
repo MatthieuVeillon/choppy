@@ -14,7 +14,7 @@ export const useFirebaseApi = (
       setData(transformedData);
     };
     fetchData();
-  }, [ref]);
+  }, [ref, transformDataForState]);
 
   return [data, setRef];
 };

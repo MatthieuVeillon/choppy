@@ -1,10 +1,9 @@
+import PropTypes from 'prop-types';
 import React, { useContext } from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
-import { RecipeCard } from '../RecipeCard/RecipeCard';
-import { GlobalContext } from '../../App';
-import { searchAndFilter } from './utilsRecipe';
 import { recipesContext } from '../../Context/RecipesContext';
+import { RecipeCard } from '../RecipeCard/RecipeCard';
+import { searchAndFilter } from './utilsRecipe';
 
 export const RecipeList = ({ filter, searchTerm }) => {
   const recipes = useContext(recipesContext);

@@ -1,28 +1,26 @@
+import Delete from '@material-ui/icons/DeleteOutlined';
+import _ from 'lodash';
 import React from 'react';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { connect } from 'react-redux';
 import {
   branch,
   compose,
   lifecycle,
-  renderComponent,
   renderNothing,
   withHandlers,
   withProps
 } from 'recompose';
-import _ from 'lodash';
-import { connect } from 'react-redux';
 import styled from 'styled-components';
-import Delete from '@material-ui/icons/DeleteOutlined';
+import { Box } from '../BasicComponents/Box';
+import { AddCustomIngredient } from './AddCustomIngredient';
 import {
   doFetchShoppingList,
   doRemoveShoppingListItem,
-  removeShoppingListRecipe,
   doReOrderShoppingListItems,
-  doToggleShoppingListItem
+  doToggleShoppingListItem,
+  removeShoppingListRecipe
 } from './reducer/shoppingList-reducer';
-import { Box } from '../BasicComponents/Box';
-import { AddCustomIngredient } from './AddCustomIngredient';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { SignInWithFirebase } from '../authentication/SignInWithFireBaseUI';
 
 export const ShoppingListItem = ({
   onClickHandler,

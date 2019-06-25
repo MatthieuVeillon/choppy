@@ -9,7 +9,6 @@ import * as routes from '../../constants/routes';
 import Typography from '@material-ui/core/es/Typography/Typography';
 import TextField from '@material-ui/core/es/TextField/TextField';
 import withStyles from '@material-ui/core/es/styles/withStyles';
-import { GlobalContext } from '../../App';
 import { recipesContext } from '../../Context/RecipesContext';
 import { userContext } from '../../Context/UserContext';
 

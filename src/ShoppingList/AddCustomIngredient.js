@@ -1,13 +1,13 @@
+import Add from '@material-ui/icons/AddCircleOutline';
 import React from 'react';
-import { Box, Button, FormField } from '../BasicComponents/Box';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { compose, withHandlers, withProps, withState } from 'recompose';
+import styled from 'styled-components';
+import * as uuid from 'uuid';
+import { FormField } from '../BasicComponents/Box';
 import { Form } from '../BasicComponents/Form';
 import { doPostCustomIngredientToShoppingList } from './reducer/shoppingList-reducer';
-import { withRouter } from 'react-router';
-import * as uuid from 'uuid';
-import Add from '@material-ui/icons/AddCircleOutline';
-import styled from 'styled-components';
 
 export const AddCustomIngredientBase = ({ field, onChange, handleSubmit }) => (
   <Form horizontal onSubmit={handleSubmit} stretch>

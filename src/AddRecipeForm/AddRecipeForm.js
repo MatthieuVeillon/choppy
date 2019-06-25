@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
-import { ImageInput } from '../FormInput/ImageInput';
-import { CheckboxSlider } from '../CheckboxSlider';
+import { compose } from 'recompose';
 import { connect } from 'react-redux';
-import { storageRef } from '../firebase/index';
-import { IngredientField } from '../FormInput/IngredientField';
-import { CookingStepField } from '../FormInput/CookingStepField';
-import { doPostRecipe } from '../Recipe/reducer/recipe-reducer';
 import { Box, Button, FormField } from '../BasicComponents/Box';
 import { Form } from '../BasicComponents/Form';
-import { branch, renderComponent, compose } from 'recompose';
-import _ from 'lodash';
-import { SignInWithFirebase } from '../authentication/SignInWithFireBaseUI';
+import { CheckboxSlider } from '../CheckboxSlider';
+import { storageRef } from '../firebase/index';
+import { CookingStepField } from '../FormInput/CookingStepField';
+import { ImageInput } from '../FormInput/ImageInput';
+import { IngredientField } from '../FormInput/IngredientField';
+import { doPostRecipe } from '../Recipe/reducer/recipe-reducer';
+import { withRouter } from 'react-router-dom';
 
 const initialState = {
   title: '',
@@ -27,7 +26,7 @@ const initialState = {
   pricePerPortion: ''
 };
 
-export class AddRecipeFormPage extends Component {
+export class AddRecipeFormBase extends Component {
   constructor(props) {
     super();
     this.state = initialState;
@@ -213,6 +212,15 @@ export class AddRecipeFormPage extends Component {
 }
 const mapDispatchToProps = dispatch => {
   return {
-    addRecipe: (recipe, navigateToHome) => dispatch(doPostRecipe(recipe))
+    addRecipe: (recipe, navigateToHome) => {
+      return dispatch(doPostRecipe(recipe, navigateToHome));
+    }
   };
 };
+export const AddRecipeForm = compose(
+  connect(
+    null,
+    mapDispatchToProps
+  ),
+  withRouter
+)(AddRecipeFormBase);

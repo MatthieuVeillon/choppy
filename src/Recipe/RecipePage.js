@@ -1,7 +1,7 @@
 import React, { useReducer, useState } from 'react';
 import Header from '../Header/header';
 import { SearchBar } from '../SearchBar/SearchBar';
-import { RecipeList, VisibleRecipeList } from './RecipeList/RecipeList';
+import { RecipeList } from './RecipeList/RecipeList';
 
 const filterReducer = (state, action) => {
   switch (action.type) {

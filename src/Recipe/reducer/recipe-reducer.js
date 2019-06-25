@@ -37,8 +37,8 @@ export const applySetAllRecipes = (state, action) => {
 
 export const applySetNewRecipe = (state, action) => {
   return {
-    ...state,
-    recipes: state.recipes.concat(action.payload.data)
+    ...state
+    //recipes: state.recipes.concat(action.payload.data)
   };
 };
 
@@ -63,7 +63,7 @@ export const addIdToRecipeAndIngredients = (recipe, key) => {
   return recipe;
 };
 
-export const doPostRecipe = recipe => {
+export const doPostRecipe = (recipe, navigateToHome) => {
   let key = database.ref('/recipes/').push().key;
   const recipesRef = database.ref('/recipes/' + key);
   const recipeWithId = addIdToRecipeAndIngredients(recipe, key);
@@ -72,7 +72,7 @@ export const doPostRecipe = recipe => {
     payload: {
       firebaseType: 'POST',
       firebaseMethod: () => recipesRef.set(recipeWithId),
-      onSuccess: () => doSetNewRecipe(recipeWithId)
+      onSuccess: () => navigateToHome()
     }
   };
 };

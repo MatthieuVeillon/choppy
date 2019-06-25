@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuthenticateUser } from '../authentication/useAuthenticateUser';
 
 const userContext = React.createContext();
-const { Provider, Consumer } = userContext;
+const { Provider } = userContext;
 
 const UserProvider = ({ children }) => {
   const { authUser } = useAuthenticateUser();

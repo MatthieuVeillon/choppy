@@ -1,17 +1,16 @@
-import React, { createContext, useContext } from 'react';
+import React, { useContext } from 'react';
 import { Route } from 'react-router-dom';
-import { ShoppingList } from './ShoppingList/ShoppingList';
-import { RecipeDetailCard } from './Recipe/RecipeDetail/RecipeDetailCard';
-import { Navigation } from './Navigation/Navigation';
-import * as routes from './constants/routes.js';
+import { AddRecipeForm } from './AddRecipeForm/AddRecipeForm';
 import { PasswordForgetForm } from './authentication/PasswordForget';
-import { AddRecipeFormPage } from './AddRecipeForm/AddRecipeForm';
 import { SignInWithFirebase } from './authentication/SignInWithFireBaseUI';
-import { RecipePage } from './Recipe/RecipePage';
-import { useWhyDidYouUpdate } from './utils/useWhyDidYouUpdate';
+import * as routes from './constants/routes.js';
 // import './App.css';
 import { recipesContext, RecipesProvider } from './Context/RecipesContext';
 import { userContext, UserProvider } from './Context/UserContext';
+import { Navigation } from './Navigation/Navigation';
+import { RecipeDetailCard } from './Recipe/RecipeDetail/RecipeDetailCard';
+import { RecipePage } from './Recipe/RecipePage';
+import { ShoppingList } from './ShoppingList/ShoppingList';
 
 export const App = () => {
   //useWhyDidYouUpdate("App", props);
@@ -38,7 +37,7 @@ export const App = () => {
 
 const AddRecipePage = () => {
   const authUser = useContext(userContext);
-  return authUser ? <AddRecipeFormPage /> : <SignInWithFirebase />;
+  return authUser ? <AddRecipeForm /> : <SignInWithFirebase />;
 };
 
 const ShoppingListPage = () => {

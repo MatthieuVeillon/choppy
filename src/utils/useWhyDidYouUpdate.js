@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 // Let's pretend this <Counter> component is expensive to re-render so ...
 // ... we wrap with React.memo, but we're still seeing performance issues :/
