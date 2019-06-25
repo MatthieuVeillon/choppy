@@ -37,12 +37,12 @@ export const App = () => {
 };
 
 const AddRecipePage = () => {
-  const { authUser } = useContext(userContext);
+  const authUser = useContext(userContext);
   return authUser ? <AddRecipeFormPage /> : <SignInWithFirebase />;
 };
 
 const ShoppingListPage = () => {
-  const { authUser } = useContext(userContext);
+  const authUser = useContext(userContext);
   return authUser ? (
     <ShoppingList authUser={authUser} />
   ) : (
@@ -50,8 +50,7 @@ const ShoppingListPage = () => {
   );
 };
 
-const RecipeDetailPage = ({ props }) => {
-  const { recipes } = useContext(recipesContext);
+const RecipeDetailPage = props => {
+  const recipes = useContext(recipesContext);
   return recipes.length > 0 && <RecipeDetailCard {...props} />;
 };
-console.log(3);

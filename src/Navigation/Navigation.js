@@ -7,8 +7,7 @@ import { Box } from '../BasicComponents/Box';
 import { userContext } from '../Context/UserContext';
 
 export const Navigation = props => {
-  const authUser = useContext(userContext).authUser;
-  console.log(authUser); //?
+  const authUser = useContext(userContext);
   return (
     <StyledNav>
       <StyledLink exact to={routes.HOME}>

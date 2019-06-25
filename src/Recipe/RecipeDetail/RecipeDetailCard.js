@@ -158,15 +158,15 @@ export const AddToShoppingListForm = compose(
       return { meal };
     }
   ),
-  connect(({ shoppingList }, { authUser }) => {
+  connect(({ shoppingList }, props) => {
     const computedProps = {};
     if (shoppingList.shoppingListItems) {
       computedProps.shoppingListItemsId = Object.keys(
         shoppingList.shoppingListItems
       );
     }
-    if (authUser !== null) {
-      computedProps.uid = authUser.uid;
+    if (props.authUser !== null) {
+      computedProps.uid = props.authUser.uid;
     }
     return computedProps;
   }),
@@ -220,9 +220,8 @@ export const AddToShoppingListButton = compose(withStyles(styles))(
 //                 recipeDetailCard
 //########################################################
 export const RecipeDetailCard = ({ match }) => {
-  const { recipes } = useContext(recipesContext);
-  const { authUser } = useContext(userContext);
-
+  const recipes = useContext(recipesContext);
+  const authUser = useContext(userContext);
   const recipeDisplayed = recipes.filter(
     recipe => recipe.recipeId === match.params.recipeId
   )[0];

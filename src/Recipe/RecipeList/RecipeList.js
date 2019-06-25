@@ -7,7 +7,7 @@ import { searchAndFilter } from './utilsRecipe';
 import { recipesContext } from '../../Context/RecipesContext';
 
 export const RecipeList = ({ filter, searchTerm }) => {
-  const { recipes } = useContext(recipesContext);
+  const recipes = useContext(recipesContext);
   const filteredRecipes = searchAndFilter(recipes, filter, searchTerm);
 
   return filteredRecipes.length > 0 ? (

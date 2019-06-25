@@ -7,17 +7,14 @@ export const useFirebaseApi = (
 ) => {
   const [data, setData] = useState(initialState);
   const [ref, setRef] = useState(initialRef);
-  useEffect(
-    () => {
-      const fetchData = async () => {
-        const result = await ref.once('value');
-        const transformedData = transformDataForState(result);
-        setData(transformedData);
-      };
-      fetchData();
-    },
-    [ref]
-  );
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await ref.once('value');
+      const transformedData = transformDataForState(result);
+      setData(transformedData);
+    };
+    fetchData();
+  }, [ref]);
 
   return [data, setRef];
 };
