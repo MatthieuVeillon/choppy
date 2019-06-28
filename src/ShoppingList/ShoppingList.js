@@ -4,6 +4,7 @@ import { database } from '../firebase';
 import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { connect } from 'react-redux';
+import { produce } from 'immer';
 import {
   branch,
   compose,
@@ -27,6 +28,18 @@ import {
   useFirebasePOSTApi
 } from '../Recipe/useFirebaseApi';
 
+// to remove ingredient I'm gonna do an optimistic update of the UI (UI state change before, DB change and then display error message if any):
+// I need 2 endpoints and 2 state update
+// endpoints :
+//  - Remove ingredient from Shopping.ShoppingListItems
+//  - Remove ingredient from Shopping.ShoppingListItemsID
+//  Can I batch the 2 updates through the same endpoint update ?
+//
+// state update :
+//  - Remove ingredient from Shopping.ShoppingListItems
+//  - Remove ingredient from Shopping.ShoppingListItemsID
+// should be able to nbatch them too
+
 export const ShoppingListItem = ({
   ingredient,
   onRemoveHandler,
@@ -35,27 +48,41 @@ export const ShoppingListItem = ({
   setShoppingList
 }) => {
   //TODO change ingredient.IngredientID for ingredient.ID
-  const endpoint = database.ref(
+  const toggleIngredientPurchaseStatusEndpoint = database.ref(
     `shoppingList/${uid}/shoppingListItems/${ingredient.ingredientId}/`
   );
-  const [updateIngredientPurchaseStatus] = useFirebasePOSTApi(
-    endpoint,
+  const [toggleIngredientPurchaseStatus] = useFirebasePOSTApi(
+    toggleIngredientPurchaseStatusEndpoint,
     { purchased: !ingredient.purchased },
     'UPDATE'
   );
+  const removeIngredientFromShoppingListEndpoint = database.ref(
+    `shoppingList/${uid}/`
+  );
+  const [removeIngredientFromShoppingList] = useFirebasePOSTApi(
+    removeIngredientFromShoppingListEndpoint,
+    {}
+  );
+
+  const onRemoveHandler2 = () => {
+    const ingredientID = ingredient.ingredientId;
+
+    //   const updateObj = {
+    //   const updateObj = {
+    //     `shoppingListItems.${ingredient.ingredientId}`: null,
+    //     shoppingListItemsId[ingredient.ingredientId]: null
+    //   };
+  };
 
   const onClickHandler = () => {
-    updateIngredientPurchaseStatus();
-    setShoppingList(prevState => ({
-      ...prevState,
-      shoppingListItems: {
-        ...prevState.shoppingListItems,
-        [ingredient.ingredientId]: {
-          ...prevState.shoppingListItems[ingredient.ingredientId],
-          purchased: !ingredient.purchased
-        }
-      }
-    }));
+    toggleIngredientPurchaseStatus();
+    setShoppingList(
+      produce(draft => {
+        draft.shoppingListItems[
+          ingredient.ingredientId
+        ].purchased = !ingredient.purchased;
+      })
+    );
   };
 
   return (
@@ -164,6 +191,7 @@ const ShoppingListBase = ({
                       onRemoveHandler={onRemoveIngredientHandler}
                       onClickIngredientHandler={onClickIngredientHandler}
                       setShoppingList={setShoppingList}
+                      shoppingList={shoppingList}
                       index={index}
                       uid={uid}
                     />
