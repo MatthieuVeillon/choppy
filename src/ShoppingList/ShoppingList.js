@@ -1,6 +1,7 @@
 import Delete from '@material-ui/icons/DeleteOutlined';
 import _ from 'lodash';
-import React from 'react';
+import { database } from '../firebase';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { connect } from 'react-redux';
 import {
@@ -21,13 +22,42 @@ import {
   doToggleShoppingListItem,
   removeShoppingListRecipe
 } from './reducer/shoppingList-reducer';
+import {
+  useFirebaseGETApi,
+  useFirebasePOSTApi
+} from '../Recipe/useFirebaseApi';
 
 export const ShoppingListItem = ({
-  onClickHandler,
   ingredient,
   onRemoveHandler,
-  index
+  index,
+  uid,
+  setShoppingList
 }) => {
+  //TODO change ingredient.IngredientID for ingredient.ID
+  const endpoint = database.ref(
+    `shoppingList/${uid}/shoppingListItems/${ingredient.ingredientId}/`
+  );
+  const [updateIngredientPurchaseStatus] = useFirebasePOSTApi(
+    endpoint,
+    { purchased: !ingredient.purchased },
+    'UPDATE'
+  );
+
+  const onClickHandler = () => {
+    updateIngredientPurchaseStatus();
+    setShoppingList(prevState => ({
+      ...prevState,
+      shoppingListItems: {
+        ...prevState.shoppingListItems,
+        [ingredient.ingredientId]: {
+          ...prevState.shoppingListItems[ingredient.ingredientId],
+          purchased: !ingredient.purchased
+        }
+      }
+    }));
+  };
+
   return (
     <Draggable draggableId={ingredient.ingredientId} index={index}>
       {(provided, snapshot) => (
@@ -42,11 +72,7 @@ export const ShoppingListItem = ({
           {...provided.dragHandleProps}
           innerRef={provided.innerRef}
         >
-          <Box
-            onClick={() =>
-              onClickHandler(ingredient.ingredientId, ingredient.purchased)
-            }
-          >
+          <Box onClick={() => onClickHandler()}>
             {ingredient.name} {ingredient.quantity} {ingredient.measure}
           </Box>
           <Box
@@ -85,57 +111,74 @@ export const ShoppingListRecipe = ({ meal, onRemoveHandler }) => (
   </Box>
 );
 
+const RecipeList = ({ shoppingList }) => {
+  //TODO change null and the way I burn recipes in the state when I get the data from the DB - see applySetShoppingList
+  const recipes = null;
+  return recipes ? (
+    <React.Fragment>
+      <h4>Recipe</h4>
+      <Box spaceAround>
+        {shoppingList.shoppingListRecipes.map(meal => (
+          <ShoppingListRecipeCard
+            key={meal.recipeId}
+            meal={meal}
+            onRemoveHandler={onRemoveRecipeHandler}
+          />
+        ))}
+      </Box>
+    </React.Fragment>
+  ) : null;
+};
+
 const ShoppingListBase = ({
   shoppingList,
+  setShoppingList,
   onClickIngredientHandler,
   onRemoveIngredientHandler,
   onRemoveRecipeHandler,
   onDragEnd,
   uid
-}) => (
-  <div>
-    <h4>Recipe</h4>
-    <Box spaceAround>
-      {shoppingList.shoppingListRecipes.map(meal => (
-        <ShoppingListRecipeCard
-          key={meal.recipeId}
-          meal={meal}
-          onRemoveHandler={onRemoveRecipeHandler}
-        />
-      ))}
-    </Box>
-    <h4>Ingredients from recipes</h4>
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId={'recipeList-1'}>
-        {provided => (
-          <Box
-            vertical
-            innerRef={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            {shoppingList.shoppingListItemsId.map(
-              (shoppingListItemsId, index) => {
-                const ingredient =
-                  shoppingList.shoppingListItems[shoppingListItemsId];
-                return (
-                  <ShoppingListItem
-                    key={ingredient.ingredientId}
-                    ingredient={ingredient}
-                    onClickHandler={onClickIngredientHandler}
-                    onRemoveHandler={onRemoveIngredientHandler}
-                    index={index}
-                  />
-                );
-              }
-            )}
-            {provided.placeholder}
-          </Box>
-        )}
-      </Droppable>
-    </DragDropContext>
-    <AddCustomIngredient shoppingList={shoppingList} uid={uid} />
-  </div>
-);
+}) => {
+  return shoppingList.length === 0 ? (
+    <div>loading</div>
+  ) : (
+    <div>
+      <RecipeList shoppingList={shoppingList} />
+      <h4> Individual Ingredients </h4>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId={'recipeList-1'}>
+          {provided => (
+            <Box
+              vertical
+              innerRef={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {shoppingList.shoppingListItemsId.map(
+                (shoppingListItemsId, index) => {
+                  const ingredient =
+                    shoppingList.shoppingListItems[shoppingListItemsId];
+                  return (
+                    <ShoppingListItem
+                      key={ingredient.ingredientId}
+                      ingredient={ingredient}
+                      onRemoveHandler={onRemoveIngredientHandler}
+                      onClickIngredientHandler={onClickIngredientHandler}
+                      setShoppingList={setShoppingList}
+                      index={index}
+                      uid={uid}
+                    />
+                  );
+                }
+              )}
+              {provided.placeholder}
+            </Box>
+          )}
+        </Droppable>
+      </DragDropContext>
+      <AddCustomIngredient shoppingList={shoppingList} uid={uid} />
+    </div>
+  );
+};
 
 const onDragEnd = ({ dispatch, shoppingList, uid }) => result => {
   const { destination, source, draggableId } = result;
@@ -184,7 +227,36 @@ const onRemoveRecipeHandler = ({ dispatch, shoppingList, uid }) => recipeId => {
   );
 };
 
-export const ShoppingList = compose(
+const useShoppingListItems = uid => {
+  const endPoint = useCallback(
+    () => database.ref(`/shoppingList/${uid}`).once('value'),
+    [uid]
+  );
+  const [shoppingListFromDB, isInError, isLoading] = useFirebaseGETApi(
+    endPoint,
+    []
+  );
+  const [shoppingList, setShoppingList] = useState(shoppingListFromDB);
+  useEffect(() => {
+    if (shoppingListFromDB) {
+      setShoppingList(shoppingListFromDB);
+    }
+  }, [shoppingListFromDB]);
+  return [shoppingList, setShoppingList];
+};
+
+export const ShoppingList = ({ authUser }) => {
+  const [shoppingList, setShoppingList] = useShoppingListItems(authUser.uid);
+  return (
+    <ShoppingListBase
+      shoppingList={shoppingList}
+      setShoppingList={setShoppingList}
+      uid={authUser.uid}
+    />
+  );
+};
+
+export const ShoppingList2 = compose(
   connect(),
   withProps(({ authUser }) => ({
     uid: authUser.uid

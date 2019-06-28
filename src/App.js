@@ -5,6 +5,7 @@ import { PasswordForgetForm } from './authentication/PasswordForget';
 import { SignInWithFirebase } from './authentication/SignInWithFireBaseUI';
 import * as routes from './constants/routes.js';
 // import './App.css';
+//import { useWhyDidYouUpdate } from "./utils/useWhyDidYouUpdate";
 import { recipesContext, RecipesProvider } from './Context/RecipesContext';
 import { userContext, UserProvider } from './Context/UserContext';
 import { Navigation } from './Navigation/Navigation';
@@ -12,12 +13,12 @@ import { RecipeDetailCard } from './Recipe/RecipeDetail/RecipeDetailCard';
 import { RecipePage } from './Recipe/RecipePage';
 import { ShoppingList } from './ShoppingList/ShoppingList';
 
-export const App = () => {
-  //useWhyDidYouUpdate("App", props);
+export const App = props => {
+  // useWhyDidYouUpdate("App", props);
 
   return (
-    <RecipesProvider>
-      <UserProvider>
+    <UserProvider>
+      <RecipesProvider>
         <div className="App">
           <Navigation />
           <Route path={routes.ADD_RECIPE} component={AddRecipePage} />
@@ -30,8 +31,8 @@ export const App = () => {
           <Route path={routes.SIGN_IN} component={SignInWithFirebase} />
           <Route path={routes.PASSWORD_FORGET} component={PasswordForgetForm} />
         </div>
-      </UserProvider>
-    </RecipesProvider>
+      </RecipesProvider>
+    </UserProvider>
   );
 };
 
@@ -50,6 +51,6 @@ const ShoppingListPage = () => {
 };
 
 const RecipeDetailPage = props => {
-  const recipes = useContext(recipesContext);
+  const { recipes } = useContext(recipesContext);
   return recipes.length > 0 && <RecipeDetailCard {...props} />;
 };

@@ -5,12 +5,17 @@ import { recipesContext } from '../../Context/RecipesContext';
 import { RecipeCard } from '../RecipeCard/RecipeCard';
 import { searchAndFilter } from './utilsRecipe';
 
+const LoadingComponent = () => <div>currently loading</div>;
+
 export const RecipeList = ({ filter, searchTerm }) => {
-  const recipes = useContext(recipesContext);
+  const { recipes, isLoading, isInError } = useContext(recipesContext);
   const filteredRecipes = searchAndFilter(recipes, filter, searchTerm);
 
-  return filteredRecipes.length > 0 ? (
+  return isLoading ? (
+    <LoadingComponent />
+  ) : filteredRecipes.length > 0 ? (
     <RecipeHomeCardContainer>
+      {isInError && <div> In error </div>}
       {filteredRecipes.map(recipe => (
         <RecipeCard key={recipe.recipeId} {...recipe} />
       ))}

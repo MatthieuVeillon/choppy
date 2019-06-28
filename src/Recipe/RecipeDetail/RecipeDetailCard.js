@@ -219,7 +219,7 @@ export const AddToShoppingListButton = compose(withStyles(styles))(
 //                 recipeDetailCard
 //########################################################
 export const RecipeDetailCard = ({ match }) => {
-  const recipes = useContext(recipesContext);
+  const { recipes } = useContext(recipesContext);
   const authUser = useContext(userContext);
   const recipeDisplayed = recipes.filter(
     recipe => recipe.recipeId === match.params.recipeId

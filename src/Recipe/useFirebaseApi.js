@@ -1,20 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
-export const useFirebaseApi = (
-  initialRef,
+export const useFirebaseGETApi = (
+  endpoint,
   initialState,
-  transformDataForState
+  transformDataForState = null
 ) => {
   const [data, setData] = useState(initialState);
-  const [ref, setRef] = useState(initialRef);
+  const [isInError, setIsInError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
-      const result = await ref.once('value');
-      const transformedData = transformDataForState(result);
-      setData(transformedData);
+      setIsLoading(true);
+      try {
+        const result = await endpoint();
+        const transformedData = transformDataForState
+          ? transformDataForState(result)
+          : result.val();
+        setData(transformedData);
+      } catch (error) {
+        setIsInError(true);
+      }
+      setIsLoading(false);
     };
     fetchData();
-  }, [ref, transformDataForState]);
+  }, [endpoint, transformDataForState]);
 
-  return [data, setRef];
+  return [data, isInError, isLoading];
+};
+
+export const useFirebasePOSTApi = (endpoint, payload, method = 'SET') => {
+  const [isInError, setIsInError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const postData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      if (method === 'UPDATE') {
+        console.log('payload', payload);
+        await endpoint.update(payload);
+      } else {
+        await endpoint.set(payload);
+      }
+    } catch (error) {
+      setIsInError(true);
+    }
+    setIsLoading(false);
+  }, [endpoint, payload]);
+
+  return [postData, isInError, isLoading];
 };

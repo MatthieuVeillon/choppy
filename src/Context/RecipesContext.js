@@ -1,16 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { database } from '../firebase';
 import { transformedData } from '../Recipe/RecipeList/utilsRecipe';
-import { useFirebaseApi } from '../Recipe/useFirebaseApi';
+import { useFirebaseGETApi } from '../Recipe/useFirebaseApi';
+import { useWhyDidYouUpdate } from '../utils/useWhyDidYouUpdate';
 
 const recipesContext = React.createContext();
 const { Provider } = recipesContext;
-const ref = database.ref(`/recipes`);
+const fetchRecipeEndpoint = () => database.ref(`/recipes`).once('value');
 
 const RecipesProvider = ({ children }) => {
-  const [recipesFromDB] = useFirebaseApi(ref, [], transformedData);
+  const [recipesFromDB, isInError, isLoading] = useFirebaseGETApi(
+    fetchRecipeEndpoint,
+    [],
+    transformedData
+  );
   const [recipes, setRecipes] = useState(recipesFromDB);
-  return <Provider value={recipesFromDB}>{children}</Provider>;
+
+  useEffect(() => {
+    setRecipes(recipesFromDB);
+  }, [recipesFromDB]);
+
+  const recipeContextValue = useMemo(() => {
+    return {
+      recipes,
+      setRecipes,
+      isLoading,
+      isInError
+    };
+  }, [recipes, isInError, isLoading]);
+  return <Provider value={recipeContextValue}>{children}</Provider>;
 };
 
 export { RecipesProvider, recipesContext };
