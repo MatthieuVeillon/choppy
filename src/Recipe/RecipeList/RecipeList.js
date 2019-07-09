@@ -14,7 +14,7 @@ export const RecipeList = ({ filter, searchTerm }) => {
   return isLoading ? (
     <LoadingComponent />
   ) : filteredRecipes.length > 0 ? (
-    <RecipeHomeCardContainer>
+    <RecipeHomeCardContainer data-testid="recipeList">
       {isInError && <div> In error </div>}
       {filteredRecipes.map(recipe => (
         <RecipeCard key={recipe.recipeId} {...recipe} />
