@@ -18,6 +18,8 @@
 /idea
 .idea/workspace.xml
 .vscode
+cypress/videos
+cypress/screenshots
 
 npm-debug.log*
 yarn-debug.log*
