@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { database } from '../firebase';
 import { transformedData } from '../Recipe/RecipeList/utilsRecipe';
 import { useFirebaseGETApi } from '../Recipe/useFirebaseApi';
-import { useWhyDidYouUpdate } from '../utils/useWhyDidYouUpdate';
 
 const recipesContext = React.createContext();
 const { Provider } = recipesContext;

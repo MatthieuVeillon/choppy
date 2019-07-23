@@ -1,25 +1,16 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add("login", (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This is will overwrite an existing command --
-// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+Cypress.Commands.add("login", user => {
+  cy.visit("/")
+    .getByText("SignIn")
+    .click()
+    .get(":nth-child(2) > .firebaseui-idp-button") //can access it with getByText as its firebaseUI
+    .click()
+    .get(".mdl-textfield__input")
+    .type("mveillon@octopus-itsm.com")
+    .get(".firebaseui-id-submit")
+    .click()
+    .get(":nth-child(3) > .mdl-textfield__input")
+    .type("test1234")
+    .get(".firebaseui-id-submit")
+    .click()
+    .getByText("Sign Out");
+});

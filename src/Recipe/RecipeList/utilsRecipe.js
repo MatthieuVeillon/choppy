@@ -1,5 +1,5 @@
 export const transformedData = rawData =>
-  Object.keys(rawData.val()).map(recipeID => rawData.val()[recipeID]);
+  Object.keys(rawData).map(recipeID => rawData[recipeID]);
 
 const insensitiveSearch = (title, searchTerm) =>
   title.toLowerCase().includes(searchTerm.toLowerCase());

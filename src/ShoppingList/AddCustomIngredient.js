@@ -1,74 +1,97 @@
 import Add from '@material-ui/icons/AddCircleOutline';
-import React from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
-import { compose, withHandlers, withProps, withState } from 'recompose';
+import { produce } from 'immer';
+import _ from 'lodash';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import * as uuid from 'uuid';
 import { FormField } from '../BasicComponents/Box';
 import { Form } from '../BasicComponents/Form';
-import { doPostCustomIngredientToShoppingList } from './reducer/shoppingList-reducer';
+import { database } from '../firebase';
+import { useFirebasePOSTApi } from '../Recipe/useFirebaseApi';
 
-export const AddCustomIngredientBase = ({ field, onChange, handleSubmit }) => (
-  <Form horizontal onSubmit={handleSubmit} stretch>
-    <FormField
-      noborder
-      borderBottom
-      type="text"
-      value={field}
-      onChange={onChange}
-      id="title"
-      placeholder={'your own ingredient'}
-      required
-      width={'100%'}
-    />
-    <AddButton type="submit">
-      <Add />
-    </AddButton>
-  </Form>
-);
+const makeNewIngredient = customIngredient => {
+  const ingredient = {};
+  ingredient.ingredientId = uuid();
+  ingredient.purchased = false;
+  ingredient.name = customIngredient;
+  ingredient.recipeId = 'custom';
+  return ingredient;
+};
 
-export const AddCustomIngredient = compose(
-  connect(),
-  withRouter,
-  withState('field', 'setFieldValue', ''),
-  withHandlers({
-    onChange: ({ setFieldValue }) => e => {
-      setFieldValue(e.target.value);
-    }
-  }),
-  withProps(({ field }) => {
-    let ingredient = {};
-    ingredient.ingredientId = uuid();
-    ingredient.purchased = false;
-    ingredient.name = field;
-    ingredient.recipeId = 'custom';
-    return { ingredient };
-  }),
-  withHandlers({
-    handleSubmit: ({
-      dispatch,
-      ingredient,
-      history,
-      setFieldValue,
-      shoppingList,
-      uid
-    }) => e => {
-      e.preventDefault();
-      const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat([
-        ingredient.ingredientId
-      ]);
-      dispatch(
-        doPostCustomIngredientToShoppingList(
-          ingredient,
-          newShoppingListItemsId,
-          uid
-        )
-      );
-      setFieldValue('');
-    }
-  })
-)(AddCustomIngredientBase);
+export const AddCustomIngredient = ({
+  field,
+  uid,
+  shoppingList,
+  setShoppingList
+}) => {
+  const [customIngredient, setCustomIngredient] = useState('');
+  const newIngredient = makeNewIngredient(customIngredient);
+  const addCustomIngredientEndpoint = database.ref(`shoppingList/${uid}`);
+
+  const newShoppingListItems = [
+    ...shoppingList.shoppingListItems,
+    newIngredient
+  ];
+  const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat([
+    newIngredient.ingredientId
+  ]);
+
+  const updatedShoppingList = {};
+  updatedShoppingList[`/shoppingListItems/`] = _.keyBy(
+    newShoppingListItems,
+    'ingredientId'
+  ); //format for BD
+  updatedShoppingList[`/shoppingListItemsId/`] = newShoppingListItemsId;
+
+  const [addCustomIngredientInDB] = useFirebasePOSTApi(
+    addCustomIngredientEndpoint,
+    updatedShoppingList,
+    'UPDATE'
+  );
+
+  const handleOnChange = e => setCustomIngredient(e.target.value);
+
+  const handleOnSubmit = e => {
+    e.preventDefault();
+
+    //Optimistic UI Update
+    setShoppingList(
+      produce(draft => {
+        draft.shoppingListItemsId = newShoppingListItemsId;
+        draft.shoppingListItems = newShoppingListItems;
+      })
+    );
+
+    setCustomIngredient('');
+
+    addCustomIngredientInDB();
+  };
+
+  // handleSubmit: ({ dispatch, ingredient, setFieldValue, shoppingList, uid }) => e => {
+  //   e.preventDefault();
+  //   const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat([ingredient.ingredientId]);
+  //   dispatch(doPostCustomIngredientToShoppingList(ingredient, newShoppingListItemsId, uid));
+  //   setFieldValue("");
+  // }
+  return (
+    <Form horizontal onSubmit={handleOnSubmit} stretch>
+      <FormField
+        noborder
+        borderBottom
+        type="text"
+        value={customIngredient}
+        onChange={handleOnChange}
+        id="title"
+        placeholder={'your own ingredient'}
+        required
+        width={'100%'}
+      />
+      <AddButton type="submit">
+        <Add />
+      </AddButton>
+    </Form>
+  );
+};
 
 const AddButton = styled.button`
   padding: 0;

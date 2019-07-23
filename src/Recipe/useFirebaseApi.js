@@ -15,10 +15,12 @@ export const useFirebaseGETApi = (
       try {
         const result = await endpoint();
         const transformedData = transformDataForState
-          ? transformDataForState(result)
+          ? transformDataForState(result.val())
           : result.val();
+
         setData(transformedData);
       } catch (error) {
+        console.log('error in useFirebaseGETApi', error);
         setIsInError(true);
       }
       setIsLoading(false);
@@ -32,12 +34,10 @@ export const useFirebaseGETApi = (
 export const useFirebasePOSTApi = (endpoint, payload, method = 'SET') => {
   const [isInError, setIsInError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const postData = useCallback(async () => {
     setIsLoading(true);
     try {
       if (method === 'UPDATE') {
-        console.log('payload', payload);
         await endpoint.update(payload);
       } else {
         await endpoint.set(payload);
@@ -46,7 +46,7 @@ export const useFirebasePOSTApi = (endpoint, payload, method = 'SET') => {
       setIsInError(true);
     }
     setIsLoading(false);
-  }, [endpoint, payload]);
+  }, [endpoint, payload, method]);
 
   return [postData, isInError, isLoading];
 };

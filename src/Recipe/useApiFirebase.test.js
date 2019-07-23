@@ -1,19 +1,25 @@
-import { renderHook, act } from 'react-hooks-testing-library';
-import { useFirebaseApi } from './useFirebaseApi';
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useFirebaseGETApi } from './useFirebaseApi';
 import { database } from '../firebase';
 
 describe('useApiFirebase', function() {
-  jest.spyOn(database, 'ref');
-  database.ref.mockImplementation(() => ({
-    once: jest.fn(() => ({ recipe: 234 }))
-  }));
   let transformedData = jest.fn(obj => obj);
-  const ref = database.ref(`/recipes`);
+  const endpoint = () => {
+    return {
+      val: () => {
+        return {
+          recipe: 234
+        };
+      }
+    };
+  };
 
-  it('should fetch the data with ref provided', async () => {
+  it('should fetch the data with provided endpoint', async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
-      useFirebaseApi(ref, [], transformedData)
+      useFirebaseGETApi(endpoint, [])
     );
+    console.log('result', result.current);
+
     await waitForNextUpdate();
     expect(result.current[0]).toEqual({ recipe: 234 });
   });
@@ -21,5 +27,4 @@ describe('useApiFirebase', function() {
   it('should transform the result of the data', function() {
     transformedData = jest.fn(obj => obj);
   });
-  database.ref.mockRestore();
 });
