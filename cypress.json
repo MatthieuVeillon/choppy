@@ -1,4 +1,9 @@
 {
   "baseUrl": "http://localhost:3000",
-  "integrationFolder": "cypress/e2e"
+  "integrationFolder": "cypress/e2e",
+  "env": {
+    "email": "mveillon@octopus-itsm.com",
+    "password": "test1234",
+    "uid": "nnQvWlDkmSXPUabTPruL5Pokb0y2"
+  }
 }

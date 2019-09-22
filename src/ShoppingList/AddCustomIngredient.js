@@ -67,12 +67,6 @@ export const AddCustomIngredient = ({
     addCustomIngredientInDB();
   };
 
-  // handleSubmit: ({ dispatch, ingredient, setFieldValue, shoppingList, uid }) => e => {
-  //   e.preventDefault();
-  //   const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat([ingredient.ingredientId]);
-  //   dispatch(doPostCustomIngredientToShoppingList(ingredient, newShoppingListItemsId, uid));
-  //   setFieldValue("");
-  // }
   return (
     <Form horizontal onSubmit={handleOnSubmit} stretch>
       <FormField
@@ -81,10 +75,10 @@ export const AddCustomIngredient = ({
         type="text"
         value={customIngredient}
         onChange={handleOnChange}
-        id="title"
         placeholder={'your own ingredient'}
         required
         width={'100%'}
+        data-testid="customIngredient"
       />
       <AddButton type="submit">
         <Add />

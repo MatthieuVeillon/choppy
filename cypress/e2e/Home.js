@@ -1,15 +1,28 @@
-describe("RecipePage", () => {
+import { addRecipeInShoppingList, addRecipe, removeRecipe } from "./utils";
+import uuid from "uuid/v4";
+
+describe("Home", () => {
   const user = cy;
+  const recipeId = uuid();
+
+  beforeEach(() => {
+    addRecipe(recipeId);
+  });
+
+  afterEach(() => {
+    removeRecipe(recipeId);
+  });
+
   it("should display recipes", () => {
-    user.visit("/").getByText("gratin dauphinois test");
+    user.visit("/").getByText("veau patate");
   });
 
   it("should redirect the user to right page when he clicks on a specific recipe", () => {
     user
       .visit("/")
-      .getByText("gratin dauphinois test")
+      .getByText("veau patate")
       .click()
-      .getByText("gratin dauphinois test");
+      .getByText("veau patate");
   });
 
   it("should filter out the recipes based on their categories", () => {

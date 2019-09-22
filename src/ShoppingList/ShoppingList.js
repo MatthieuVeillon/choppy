@@ -1,17 +1,8 @@
 import Delete from '@material-ui/icons/DeleteOutlined';
 import { produce } from 'immer';
 import _ from 'lodash';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { connect } from 'react-redux';
-import {
-  branch,
-  compose,
-  lifecycle,
-  renderNothing,
-  withHandlers,
-  withProps
-} from 'recompose';
 import styled from 'styled-components';
 import { Box } from '../BasicComponents/Box';
 import { database } from '../firebase';
@@ -20,27 +11,9 @@ import {
   useFirebasePOSTApi
 } from '../Recipe/useFirebaseApi';
 import { AddCustomIngredient } from './AddCustomIngredient';
-import {
-  doFetchShoppingList,
-  doRemoveShoppingListItem,
-  doReOrderShoppingListItems,
-  doToggleShoppingListItem
-} from './reducer/shoppingList-reducer';
-
-// to remove ingredient I'm gonna do an optimistic update of the UI (UI state change before, DB change and then display error message if any):
-// I need 2 endpoints and 2 state update
-// endpoints :
-//  - Remove ingredient from Shopping.ShoppingListItems
-//  - Remove ingredient from Shopping.ShoppingListItemsID
-//  Can I batch the 2 updates through the same endpoint update ?
-//
-// state update :
-//  - Remove ingredient from Shopping.ShoppingListItems
-//  - Remove ingredient from Shopping.ShoppingListItemsID
-// should be able to batch them too
 
 const isLastIngredientForItsRecipe = (shoppingListItems, recipeId) =>
-  shoppingListItems.filter(item => item.recipeId === recipeId).count === 1;
+  shoppingListItems.filter(item => item.recipeId === recipeId).length === 1;
 
 export const ShoppingListItem = ({
   ingredient,
@@ -51,16 +24,11 @@ export const ShoppingListItem = ({
 }) => {
   //TODO change ingredient.IngredientID for ingredient.ID
   const { purchased, ingredientId, recipeId } = ingredient;
-  const {
-    shoppingListItems,
-    shoppingListItemsId,
-    shoppingListRecipes
-  } = shoppingList;
+  const { shoppingListItems } = shoppingList;
   const isLastIngredient = isLastIngredientForItsRecipe(
     shoppingListItems,
     recipeId
   );
-
   const toggleIngredientPurchaseStatusEndpoint = database.ref(
     `shoppingList/${uid}/shoppingListItems/${ingredientId}/`
   );
@@ -70,28 +38,17 @@ export const ShoppingListItem = ({
     'UPDATE'
   );
 
-  const updatedShoppingList = {};
-  const shoppingListItemsToKeep = shoppingListItems.filter(
-    item => item.ingredientId !== ingredientId
-  );
-  const shoppingListRecipesToKeep = shoppingListRecipes.filter(
-    recipe => recipe.recipeId !== recipeId
-  );
-  const shoppingListItemsIdToKeep = shoppingListItemsId.filter(itemId =>
-    shoppingListItemsToKeep.some(
-      ingredient => ingredient.ingredientId === itemId
-    )
-  );
-
-  if (isLastIngredient) {
-    updatedShoppingList[`/shoppingListRecipes/${recipeId}`] = null;
-  }
-
-  updatedShoppingList[`/shoppingListItems/`] = _.keyBy(
+  const {
+    updatedShoppingList,
+    shoppingListItemsIdToKeep,
     shoppingListItemsToKeep,
-    'ingredientId'
-  ); //format in BD is an object
-  updatedShoppingList[`/shoppingListItemsId/`] = shoppingListItemsIdToKeep;
+    shoppingListRecipesToKeep
+  } = prepareUpdatedShoppingList(
+    shoppingList,
+    ingredientId,
+    recipeId,
+    isLastIngredient
+  );
   const removeIngredientEndpoint = database.ref(`shoppingList/${uid}`);
   const [removeIngredientInDB] = useFirebasePOSTApi(
     removeIngredientEndpoint,
@@ -113,7 +70,6 @@ export const ShoppingListItem = ({
   };
 
   const onRemoveIngredientHandler = isLastIngredient => {
-    //what do I do if I'm the last ingredient of one recipe ?
     setShoppingList(
       produce(draft => {
         draft.shoppingListItemsId = shoppingListItemsIdToKeep;
@@ -144,6 +100,7 @@ export const ShoppingListItem = ({
             {ingredient.name} {ingredient.quantity} {ingredient.measure}
           </Box>
           <Box
+            data-testid={`remove${ingredient.name}`}
             right={'5px'}
             onClick={() =>
               onRemoveIngredientHandler(
@@ -174,13 +131,6 @@ const ShoppingListItemWrapper = styled(Box)`
   background-color: ${({ purchased }) => (purchased ? 'WhiteSmoke' : 'white')};
   color: ${({ purchased }) => (purchased ? 'LightGray' : 'black')};
 `;
-
-//when I remove a recipe several things happens :
-
-// 1) all ingredients that are associated with this recipe should be deleted from :
-//  - shoppinglistItems
-//  - shoppingListItemsId
-//  and finally the recipe itself
 
 export const ShoppingListRecipeCard = ({
   recipe,
@@ -240,7 +190,6 @@ export const ShoppingListRecipeCard = ({
       })
     );
 
-    //remove recipe from DB
     removeRecipeFromBD();
   };
   return (
@@ -250,7 +199,11 @@ export const ShoppingListRecipeCard = ({
         src={recipe.uploadImageUrl}
         alt={recipe.title}
       />
-      <Box right={'5px'} onClick={() => removeRecipeHandler(recipe.recipeId)}>
+      <Box
+        data-testId={`remove${recipeId}`}
+        right={'5px'}
+        onClick={() => removeRecipeHandler(recipe.recipeId)}
+      >
         <Delete />
       </Box>
     </Box>
@@ -290,95 +243,6 @@ const RecipeList = ({ shoppingList, userId, setShoppingList }) => {
   ) : null;
 };
 
-const ShoppingListBase = ({
-  shoppingList,
-  setShoppingList,
-  onRemoveIngredientHandler,
-  onDragEnd,
-  isInError,
-  uid
-}) => {
-  return !shoppingList ? (
-    <div>loading</div>
-  ) : (
-    <div>
-      <RecipeList
-        shoppingList={shoppingList}
-        userId={uid}
-        setShoppingList={setShoppingList}
-      />
-      <h4> Individual Ingredients </h4>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId={'recipeList-1'}>
-          {provided => (
-            <Box vertical ref={provided.innerRef} {...provided.droppableProps}>
-              {shoppingList.shoppingListItemsId.map(
-                (shoppingListItemsId, index) => {
-                  const ingredient = _.find(
-                    shoppingList.shoppingListItems,
-                    item => {
-                      return item.ingredientId === shoppingListItemsId;
-                    }
-                  );
-                  return (
-                    <ShoppingListItem
-                      key={ingredient.ingredientId}
-                      ingredient={ingredient}
-                      onRemoveHandler={onRemoveIngredientHandler}
-                      setShoppingList={setShoppingList}
-                      shoppingList={shoppingList}
-                      index={index}
-                      uid={uid}
-                    />
-                  );
-                }
-              )}
-              {provided.placeholder}
-            </Box>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <AddCustomIngredient
-        shoppingList={shoppingList}
-        uid={uid}
-        setShoppingList={setShoppingList}
-      />
-    </div>
-  );
-};
-
-const onDragEnd = ({ dispatch, shoppingList, uid }) => result => {
-  const { destination, source, draggableId } = result;
-
-  if (!destination) {
-    return;
-  }
-  if (
-    destination.droppableId === source.droppableId &&
-    destination.index === source.index
-  ) {
-    return;
-  }
-  const newShoppingListItemsId = Array.from(shoppingList.shoppingListItemsId);
-  newShoppingListItemsId.splice(source.index, 1);
-  newShoppingListItemsId.splice(destination.index, 0, draggableId);
-
-  dispatch(doReOrderShoppingListItems(newShoppingListItemsId, uid));
-};
-
-const onRemoveIngredientHandler = ({
-  dispatch,
-  shoppingList,
-  uid
-}) => ingredientID => {
-  const newShoppingListItemsId = shoppingList.shoppingListItemsId.filter(
-    ingredient => ingredient !== ingredientID
-  );
-  return dispatch(
-    doRemoveShoppingListItem(ingredientID, newShoppingListItemsId, uid)
-  );
-};
-
 export const transformDataForShoppingList = rawData => {
   const transformedData = {};
 
@@ -403,40 +267,148 @@ export const transformDataForShoppingList = rawData => {
 };
 
 export const useShoppingListItems = uid => {
+  const initialState = React.useMemo(() => {
+    return {
+      shoppingListItems: [],
+      shoppingListItemsId: [],
+      shoppingListRecipes: []
+    };
+  }, []);
   const endPoint = useCallback(
     () => database.ref(`/shoppingList/${uid}`).once('value'),
     [uid]
   );
-  const [shoppingListFromDB, isInError, isLoading] = useFirebaseGETApi(
-    endPoint,
-    null,
-    transformDataForShoppingList
-  );
-  const [shoppingList, setShoppingList] = useState(shoppingListFromDB);
-
-  useEffect(() => {
-    if (_.get(shoppingListFromDB, 'shoppingListItems')) {
-      setShoppingList(shoppingListFromDB);
-    }
-  }, [shoppingListFromDB]);
-
+  const [
+    shoppingList,
+    isInError,
+    isLoading,
+    setShoppingList
+  ] = useFirebaseGETApi(endPoint, initialState, transformDataForShoppingList);
   return [shoppingList, setShoppingList, isLoading, isInError];
 };
 
 export const ShoppingList = ({ authUser }) => {
-  const [
-    shoppingList,
-    setShoppingList,
-    isLoading,
-    isInError
-  ] = useShoppingListItems(authUser.uid);
-  return (
-    <ShoppingListBase
-      shoppingList={shoppingList}
-      setShoppingList={setShoppingList}
-      uid={authUser.uid}
-      isLoading={isLoading}
-      isInError={isInError}
-    />
+  const uid = authUser.uid;
+  const [shoppingList, setShoppingList, isLoading] = useShoppingListItems(
+    authUser.uid
+  );
+  const onDragEnd = result => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+      return;
+    }
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+    const newShoppingListItemsId = Array.from(shoppingList.shoppingListItemsId);
+    newShoppingListItemsId.splice(source.index, 1);
+    newShoppingListItemsId.splice(destination.index, 0, draggableId);
+
+    database
+      .ref(`shoppingList/${uid}/shoppingListItemsId/`)
+      .set(newShoppingListItemsId)
+      .catch(error => {
+        console.log(error);
+      });
+
+    setShoppingList(
+      produce(draft => {
+        draft.shoppingListItemsId = newShoppingListItemsId;
+      })
+    );
+  };
+
+  return isLoading ? (
+    <div>loading</div>
+  ) : (
+    <div>
+      <RecipeList
+        shoppingList={shoppingList}
+        userId={uid}
+        setShoppingList={setShoppingList}
+      />
+      <h4> Individual Ingredients </h4>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId={'recipeList-1'}>
+          {provided => (
+            <Box
+              data-testid="shoppingList"
+              vertical
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {shoppingList.shoppingListItemsId.map(
+                (shoppingListItemsId, index) => {
+                  const ingredient = _.find(
+                    shoppingList.shoppingListItems,
+                    item => {
+                      return item.ingredientId === shoppingListItemsId;
+                    }
+                  );
+                  return (
+                    <ShoppingListItem
+                      key={ingredient.ingredientId}
+                      ingredient={ingredient}
+                      setShoppingList={setShoppingList}
+                      shoppingList={shoppingList}
+                      index={index}
+                      uid={uid}
+                    />
+                  );
+                }
+              )}
+              {provided.placeholder}
+            </Box>
+          )}
+        </Droppable>
+      </DragDropContext>
+      <AddCustomIngredient
+        shoppingList={shoppingList}
+        uid={uid}
+        setShoppingList={setShoppingList}
+      />
+    </div>
   );
 };
+function prepareUpdatedShoppingList(
+  shoppingList,
+  ingredientId,
+  recipeId,
+  isLastIngredient
+) {
+  const updatedShoppingList = {};
+  const {
+    shoppingListItems,
+    shoppingListItemsId,
+    shoppingListRecipes
+  } = shoppingList;
+  const shoppingListItemsToKeep = shoppingListItems.filter(
+    item => item.ingredientId !== ingredientId
+  );
+  const shoppingListRecipesToKeep = shoppingListRecipes.filter(
+    recipe => recipe.recipeId !== recipeId
+  );
+  const shoppingListItemsIdToKeep = shoppingListItemsId.filter(itemId =>
+    shoppingListItemsToKeep.some(
+      ingredient => ingredient.ingredientId === itemId
+    )
+  );
+  if (isLastIngredient) {
+    updatedShoppingList[`/shoppingListRecipes/${recipeId}`] = null;
+  }
+  updatedShoppingList[`/shoppingListItems/`] = _.keyBy(
+    shoppingListItemsToKeep,
+    'ingredientId'
+  ); //format in BD is an object
+  updatedShoppingList[`/shoppingListItemsId/`] = shoppingListItemsIdToKeep;
+  return {
+    updatedShoppingList,
+    shoppingListItemsIdToKeep,
+    shoppingListItemsToKeep,
+    shoppingListRecipesToKeep
+  };
+}

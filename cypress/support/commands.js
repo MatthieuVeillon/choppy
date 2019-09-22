@@ -1,16 +1,11 @@
-Cypress.Commands.add("login", user => {
-  cy.visit("/")
-    .getByText("SignIn")
-    .click()
-    .get(":nth-child(2) > .firebaseui-idp-button") //can access it with getByText as its firebaseUI
-    .click()
-    .get(".mdl-textfield__input")
-    .type("mveillon@octopus-itsm.com")
-    .get(".firebaseui-id-submit")
-    .click()
-    .get(":nth-child(3) > .mdl-textfield__input")
-    .type("test1234")
-    .get(".firebaseui-id-submit")
-    .click()
-    .getByText("Sign Out");
+import { auth, database } from "../../src/firebase";
+
+Cypress.Commands.add("login", () => {
+  auth.signInWithEmailAndPassword(Cypress.env("email"), Cypress.env("password"));
+  cy.visit("/").getByText("Sign Out");
+});
+
+Cypress.Commands.add("resetShoppingList", async () => {
+  const removeShoppingList = database.ref(`shoppingList/${Cypress.env("uid")}`);
+  await removeShoppingList.remove();
 });

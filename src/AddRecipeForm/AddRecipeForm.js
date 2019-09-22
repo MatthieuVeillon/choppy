@@ -38,12 +38,14 @@ const addIdToRecipeAndIngredients = (recipe, key) => {
 };
 const AddRecipeFormBase = props => {
   const [newRecipe, setNewRecipe] = useState(initialState);
+  const [isLoading, setIsLoading] = useState(false);
   const { setRecipes } = useContext(recipesContext);
 
   //setup to post recipe on firebase
   const key = database.ref('/recipes/').push().key;
   const endpoint = database.ref('/recipes/' + key);
   const recipeWithId = addIdToRecipeAndIngredients(newRecipe, key);
+  debugger;
   const [postNewRecipe] = useFirebasePOSTApi(endpoint, recipeWithId);
 
   const handleSubmit = event => {
@@ -62,7 +64,7 @@ const AddRecipeFormBase = props => {
   const handleFile = event => {
     const file = event.target.files[0];
     if (!file) return;
-
+    setIsLoading(true);
     storageRef
       .ref()
       .child(`${file.name}`)
@@ -72,11 +74,12 @@ const AddRecipeFormBase = props => {
           .ref()
           .child(`${file.name}`)
           .getDownloadURL()
-          .then(url =>
+          .then(url => {
             setNewRecipe(prevState => {
               return { ...prevState, uploadImageUrl: url };
-            })
-          )
+            });
+            setIsLoading(false);
+          })
       );
   };
   const handleChangeInDynamicElement = (event, index, name, arrayToMap) => {
@@ -223,9 +226,14 @@ const AddRecipeFormBase = props => {
         />
       </Box>
 
-      <ImageInput name="picture: " onChange={handleFile} required />
+      <ImageInput
+        name="picture: "
+        onChange={handleFile}
+        required
+        isLoading={isLoading}
+      />
 
-      <Button primary type="submit" top="10px">
+      <Button primary disabled={isLoading} type="submit" top="10px">
         SUBMIT RECIPE
       </Button>
     </Form>

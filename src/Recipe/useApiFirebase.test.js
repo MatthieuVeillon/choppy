@@ -18,7 +18,6 @@ describe('useApiFirebase', function() {
     const { result, waitForNextUpdate } = renderHook(() =>
       useFirebaseGETApi(endpoint, [])
     );
-    console.log('result', result.current);
 
     await waitForNextUpdate();
     expect(result.current[0]).toEqual({ recipe: 234 });

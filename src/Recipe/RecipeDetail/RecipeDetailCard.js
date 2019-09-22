@@ -15,7 +15,7 @@ import { useFirebasePOSTApi } from '../useFirebaseApi';
 import * as routes from '../../constants/routes';
 
 //########################################################
-//                 RecipeDetailCardHeader
+//                 ipeDetailCardHeader
 //########################################################
 const RecipeDetailCardHeader = ({
   canBeFrozen,
@@ -127,16 +127,39 @@ const extractIngredientFromRecipeAndFormatItforBD = recipe => {
   return concatIngredients;
 };
 
+const prepareUpdatedShoppingList = (
+  shoppingList,
+  ingredientsFromRecipe,
+  recipeId,
+  recipeToSubmit
+) => {
+  const newShoppingListItems = {
+    ..._.keyBy(shoppingList.shoppingListItems, 'ingredientId'),
+    ...ingredientsFromRecipe
+  };
+  const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat(
+    Object.keys(ingredientsFromRecipe)
+  );
+  const updatedShoppingList = {};
+  updatedShoppingList[`/shoppingListItems/`] = _.keyBy(
+    newShoppingListItems,
+    'ingredientId'
+  ); //format for BD
+  updatedShoppingList[`/shoppingListItemsId/`] = newShoppingListItemsId;
+  updatedShoppingList[`/shoppingListRecipes/${recipeId}`] = recipeToSubmit;
+  return updatedShoppingList;
+};
+
 export const AddToShoppingListForm = ({
   ingredients,
   defaultPortionNumber,
   uid,
   title,
   recipeId,
-  uploadImageUrl,
-  shoppingList
+  uploadImageUrl
 }) => {
   const [portion, updatePortion] = useState(defaultPortionNumber);
+  const [shoppingList] = useShoppingListItems(uid);
   const { history } = useReactRouter();
 
   const recipeToSubmit = adjustIngredientsQuantityIfNeeded(
@@ -150,23 +173,13 @@ export const AddToShoppingListForm = ({
   const ingredientsFromRecipe = extractIngredientFromRecipeAndFormatItforBD(
     recipeToSubmit
   );
-
-  const newShoppingListItems = {
-    ..._.keyBy(shoppingList.shoppingListItems, 'ingredientId'),
-    ...ingredientsFromRecipe
-  };
-
-  const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat(
-    Object.keys(ingredientsFromRecipe)
+  const updatedShoppingList = prepareUpdatedShoppingList(
+    shoppingList,
+    ingredientsFromRecipe,
+    recipeId,
+    recipeToSubmit
   );
-  const updatedShoppingList = {};
-  updatedShoppingList[`/shoppingListItems/`] = _.keyBy(
-    newShoppingListItems,
-    'ingredientId'
-  ); //format for BD
-  updatedShoppingList[`/shoppingListItemsId/`] = newShoppingListItemsId;
-  updatedShoppingList[`/shoppingListRecipes/${recipeId}`] = recipeToSubmit;
-
+  debugger;
   const addRecipeIngredientsEndpoint = database.ref(`shoppingList/${uid}`);
   const [addRecipeIngredientsInDB] = useFirebasePOSTApi(
     addRecipeIngredientsEndpoint,
@@ -240,8 +253,6 @@ export const AddToShoppingListButton = compose(withStyles(styles))(
 export const RecipeDetailCard = ({ match }) => {
   const { recipes } = useContext(recipesContext);
   const authUser = useContext(userContext);
-  const [shoppingList] = useShoppingListItems(authUser.uid);
-
   const recipeDisplayed = recipes.filter(
     recipe => recipe.recipeId === match.params.recipeId
   )[0];
@@ -280,9 +291,8 @@ export const RecipeDetailCard = ({ match }) => {
         </div>
         <RecipeCookingSteps cookingSteps={cookingSteps} />
       </RecipeDetailCardBody>
-      {shoppingList ? (
+      {authUser ? (
         <AddToShoppingListForm
-          shoppingList={shoppingList}
           defaultPortionNumber={defaultPortionNumber}
           ingredients={ingredients}
           title={title}

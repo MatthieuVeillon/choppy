@@ -1,14 +1,13 @@
 import { auth } from "../../src/firebase/firebase";
-import { cyan } from "@material-ui/core/colors";
 
-describe("Login.js", () => {
+describe("Login", () => {
   const user = cy;
-  //   beforeEach(() => {
-  //     //indexedDB.deleteDatabase("firebaseLocalStorageDb");
-  //     auth.signInWithEmailAndPassword("mveillon@octopus-itsm.com", "test1234");
-  //   });
 
-  it("should be able to login in the app", () => {
+  it("should login programmatically", () => {
+    user.login();
+  });
+
+  it("should be able to login in the app via UI", () => {
     user
       .visit("/")
       .getByText("SignIn")
@@ -25,9 +24,4 @@ describe("Login.js", () => {
       .click()
       .getByText("Sign Out");
   });
-
-  //   it("should login without UI", () => {
-  //     //auth.signInWithEmailAndPassword("mveillon@octopus-itsm.com", "test1234");
-  //     user.visit("/").getByText("Sign Out");
-  //   });
 });
