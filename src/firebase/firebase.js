@@ -1,10 +1,10 @@
-import firebase from 'firebase/app';
+import firebase from 'firebase';
 import 'firebase/auth';
 import 'firebase/database';
 import 'firebase/storage';
 
 // Initialize Firebase
-const devConfig = {
+export const devConfig = {
   apiKey: 'AIzaSyANLCNRKbyJgdaVmvJBrWHTIX6KHD1a-EI',
   authDomain: 'choppy-c9325.firebaseapp.com',
   databaseURL: 'https://choppy-c9325.firebaseio.com',

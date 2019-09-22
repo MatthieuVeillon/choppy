@@ -1,14 +1,36 @@
-import React from "react";
-import CategoryFilter from "../CategoryFilter/CategoryFilter";
+import React from 'react';
+import Link from '../Link';
 
-const Header = () => (
-  <p>
-    Show: <CategoryFilter category="SHOW_ALL">All</CategoryFilter>
-    {", "}
-    <CategoryFilter category="SHOW_VEGAN">Vegan</CategoryFilter>
-    {", "}
-    <CategoryFilter category="SHOW_HEALTHY">Healthy</CategoryFilter>
-  </p>
-);
+const Header = ({ dispatchFilter, filter }) => {
+  const handleShowAll = () => {
+    dispatchFilter({ type: 'SHOW_ALL' });
+  };
+
+  const handleShowVegan = () => {
+    dispatchFilter({ type: 'SHOW_VEGAN' });
+  };
+
+  const handleShowHealthy = () => {
+    dispatchFilter({ type: 'SHOW_HEALTHY' });
+  };
+
+  return (
+    <p>
+      Show:{' '}
+      <Link active={filter === 'ALL'} onClick={handleShowAll}>
+        All
+      </Link>
+      {', '}
+      <Link active={filter === 'VEGAN'} onClick={handleShowVegan}>
+        Vegan
+      </Link>
+      {', '}
+      <Link active={filter === 'HEALTHY'} onClick={handleShowHealthy}>
+        {' '}
+        Healthy
+      </Link>
+    </p>
+  );
+};
 
 export default Header;

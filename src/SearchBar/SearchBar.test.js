@@ -1,26 +1,21 @@
 import React from 'react';
-import { SearchBarBase } from './SearchBar';
+import { SearchBar } from './SearchBar';
 import { render, fireEvent } from 'react-testing-library';
 
 describe('SearchBar', function() {
   it('allow the user to search for a recipe', () => {
-    //arrange
-    const props = {
-      searchTerm: 'tarte',
-      setSearchTerm: jest.fn(searchTerm => (this.searchTerm = searchTerm)),
-      dispatch: jest.fn()
+    let props = {
+      searchTerm: '',
+      setSearchTerm: jest.fn()
     };
-    const { container } = render(<SearchBarBase {...props} />);
-    const formNode = container.querySelector('form');
+    const { getByLabelText, rerender } = render(<SearchBar {...props} />);
+    const input = getByLabelText('search');
+    expect(input.value).toBe('');
+    fireEvent.change(input, { target: { value: 'test' } });
+    expect(props.setSearchTerm).toHaveBeenCalledTimes(1);
 
-    //act
-    fireEvent.submit(formNode);
-
-    //assert
-    expect(props.dispatch).toHaveBeenCalledTimes(1);
-    expect(props.dispatch).toHaveBeenCalledWith({
-      searchTerm: 'tarte',
-      type: 'RECIPE_SEARCH_SET'
-    });
+    props = { ...props, searchTerm: 'test' };
+    rerender(<SearchBar {...props} />);
+    expect(input.value).toBe('test');
   });
 });

@@ -2,5 +2,10 @@
   "baseUrl": "http://localhost:3000",
   "integrationFolder": "cypress/e2e",
   "viewportHeight": 900,
-  "viewportWidth": 400
+  "viewportWidth": 400,
+  "env": {
+    "email": "mveillon@octopus-itsm.com",
+    "password": "test1234",
+    "uid": "nnQvWlDkmSXPUabTPruL5Pokb0y2"
+  }
 }

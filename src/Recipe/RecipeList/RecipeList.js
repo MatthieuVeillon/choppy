@@ -1,20 +1,27 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
+import { recipesContext } from '../../Context/RecipesContext';
 import { RecipeCard } from '../RecipeCard/RecipeCard';
-import { connect } from 'react-redux';
-import { withRecipeData } from '../withRecipeData';
+import { searchAndFilter } from './utilsRecipe';
 
-export const RecipeListBase = ({ recipes }) =>
-  recipes ? (
-    <RecipeHomeCardContainer>
-      {recipes.map(recipe => (
+const LoadingComponent = () => <div>currently loading</div>;
+
+export const RecipeList = ({ filter, searchTerm }) => {
+  const { recipes, isLoading, isInError } = useContext(recipesContext);
+  const filteredRecipes = searchAndFilter(recipes, filter, searchTerm);
+
+  return isLoading ? (
+    <LoadingComponent />
+  ) : filteredRecipes.length > 0 ? (
+    <RecipeHomeCardContainer data-testid="recipeList">
+      {isInError && <div> In error </div>}
+      {filteredRecipes.map(recipe => (
         <RecipeCard key={recipe.recipeId} {...recipe} />
       ))}
     </RecipeHomeCardContainer>
   ) : null;
-
-export const RecipeList = withRecipeData(RecipeListBase);
+};
 
 RecipeList.propTypes = {
   recipes: PropTypes.arrayOf(
@@ -47,31 +54,3 @@ const RecipeHomeCardContainer = styled.div`
   flex-flow: row wrap;
   justify-content: space-evenly;
 `;
-
-const insensitiveSearch = (title, searchTerm) =>
-  title.toLowerCase().includes(searchTerm.toLowerCase());
-
-const getVisibleRecipesByCategory = (recipes, category) => {
-  switch (category) {
-    case 'SHOW_VEGAN':
-      return recipes.filter(recipe => recipe.categories.vegan);
-    case 'SHOW_HEALTHY':
-      return recipes.filter(recipe => recipe.categories.healthy);
-    case 'SHOW_ALL':
-    default:
-      return recipes;
-  }
-};
-
-const mapStateToProps = state => {
-  return {
-    recipes: (
-      getVisibleRecipesByCategory(
-        state.recipes.recipes,
-        state.categoryFilter
-      ) || []
-    ).filter(recipe => insensitiveSearch(recipe.title, state.recipeSearchState))
-  };
-};
-
-export const VisibleRecipeList = connect(mapStateToProps)(RecipeList);

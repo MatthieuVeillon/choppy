@@ -1,26 +1,21 @@
-import React from 'react';
-import styled from 'styled-components';
-import _ from 'lodash';
-import {
-  branch,
-  compose,
-  renderNothing,
-  withHandlers,
-  withProps,
-  withState
-} from 'recompose';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { addIngredientsToShoppingList } from '../../ShoppingList/reducer/shoppingList-reducer';
-import { Box, Button } from '../../BasicComponents/Box';
-import * as routes from '../../constants/routes';
-import { withRecipeData } from '../withRecipeData';
-import Typography from '@material-ui/core/es/Typography/Typography';
-import TextField from '@material-ui/core/es/TextField/TextField';
 import withStyles from '@material-ui/core/es/styles/withStyles';
+import TextField from '@material-ui/core/es/TextField/TextField';
+import Typography from '@material-ui/core/es/Typography/Typography';
+import _ from 'lodash';
+import React, { useContext, useState } from 'react';
+import { compose } from 'recompose';
+import styled from 'styled-components';
+import useReactRouter from 'use-react-router';
+import { Box, Button } from '../../BasicComponents/Box';
+import { recipesContext } from '../../Context/RecipesContext';
+import { userContext } from '../../Context/UserContext';
+import { database } from '../../firebase';
+import { useShoppingListItems } from '../../ShoppingList/ShoppingList';
+import { useFirebasePOSTApi } from '../useFirebaseApi';
+import * as routes from '../../constants/routes';
 
 //########################################################
-//                 RecipeDetailCardHeader
+//                 ipeDetailCardHeader
 //########################################################
 const RecipeDetailCardHeader = ({
   canBeFrozen,
@@ -89,111 +84,141 @@ const RecipeCookingSteps = ({ cookingSteps }) => (
 //########################################################
 //                 AddToShoppingListForm
 //########################################################
-export const AddToShoppingListFormBase = ({
-  handleSubmit,
+
+const adjustIngredientsQuantityIfNeeded = (
   portion,
-  onChangeHandler,
+  defaultPortionNumber,
+  ingredients,
+  recipeId,
+  title,
+  uploadImageUrl
+) => {
+  let adjustedRecipe = {};
+  let adjustedIngredients = [];
+  const hasQuantityChanged = Number(portion) !== defaultPortionNumber;
+  if (hasQuantityChanged) {
+    adjustedIngredients = ingredients.map(ingredient => {
+      return {
+        ...ingredient,
+        quantity:
+          Number(ingredient.quantity) *
+          (Number(portion) / Number(defaultPortionNumber))
+      };
+    });
+  }
+  adjustedRecipe.ingredientsWithQuantityUpdated = hasQuantityChanged
+    ? adjustedIngredients
+    : ingredients;
+  adjustedRecipe.portion = Number(portion);
+  adjustedRecipe.recipeId = recipeId;
+  adjustedRecipe.title = title;
+  adjustedRecipe.uploadImageUrl = uploadImageUrl;
+  return { ...adjustedRecipe };
+};
+
+const extractIngredientFromRecipeAndFormatItforBD = recipe => {
+  const concatIngredients = {};
+  recipe.ingredientsWithQuantityUpdated.map(ingredient => {
+    const ingredientIdentified = {
+      [ingredient.ingredientId]: { ...ingredient, purchased: false }
+    };
+    return Object.assign(concatIngredients, ingredientIdentified);
+  });
+  return concatIngredients;
+};
+
+const prepareUpdatedShoppingList = (
+  shoppingList,
+  ingredientsFromRecipe,
+  recipeId,
+  recipeToSubmit
+) => {
+  const newShoppingListItems = {
+    ..._.keyBy(shoppingList.shoppingListItems, 'ingredientId'),
+    ...ingredientsFromRecipe
+  };
+  const newShoppingListItemsId = shoppingList.shoppingListItemsId.concat(
+    Object.keys(ingredientsFromRecipe)
+  );
+  const updatedShoppingList = {};
+  updatedShoppingList[`/shoppingListItems/`] = _.keyBy(
+    newShoppingListItems,
+    'ingredientId'
+  ); //format for BD
+  updatedShoppingList[`/shoppingListItemsId/`] = newShoppingListItemsId;
+  updatedShoppingList[`/shoppingListRecipes/${recipeId}`] = recipeToSubmit;
+  return updatedShoppingList;
+};
+
+export const AddToShoppingListForm = ({
   ingredients,
   defaultPortionNumber,
-  uid
-}) => (
-  <form onSubmit={handleSubmit}>
-    <TextField
-      required
-      id="number"
-      label="Portion Number"
-      value={portion}
-      onChange={onChangeHandler}
-      type="number"
-      InputLabelProps={{
-        shrink: true
-      }}
-      margin="normal"
-    />
-    <AddToShoppingListButton
-      disabled={!uid}
-      portion={portion}
-      ingredients={ingredients}
-      defaultPortionNumber={defaultPortionNumber}
-    />
-    {!uid && <p>Please login to use the shopping list feature</p>}
-  </form>
-);
+  uid,
+  title,
+  recipeId,
+  uploadImageUrl
+}) => {
+  const [portion, updatePortion] = useState(defaultPortionNumber);
+  const [shoppingList] = useShoppingListItems(uid);
+  const { history } = useReactRouter();
 
-export const AddToShoppingListForm = compose(
-  withState(
-    'portion',
-    'updatePortion',
-    ({ defaultPortionNumber }) => defaultPortionNumber
-  ),
-  withHandlers({
-    onChangeHandler: ({ updatePortion }) => event =>
-      updatePortion(event.target.value)
-  }),
-  withProps(
-    ({
-      portion,
-      defaultPortionNumber,
-      ingredients,
-      recipeId,
-      title,
-      uploadImageUrl
-    }) => {
-      let meal = {};
-      let newIngredients = [];
-      const quantityChanged = Number(portion) !== defaultPortionNumber;
-      if (quantityChanged) {
-        newIngredients = ingredients.map(ingredient => {
-          return {
-            ...ingredient,
-            ...{
-              quantity:
-                Number(ingredient.quantity) *
-                (Number(portion) / Number(defaultPortionNumber))
-            }
-          };
-        });
-      }
-      meal.ingredientsWithQuantityUpdated = quantityChanged
-        ? newIngredients
-        : ingredients;
-      meal.portion = Number(portion);
-      meal.recipeId = recipeId;
-      meal.title = title;
-      meal.uploadImageUrl = uploadImageUrl;
-      return { meal };
-    }
-  ),
-  connect(({ shoppingList, sessionState }) => {
-    const computedProps = {};
-    if (shoppingList.shoppingListItems) {
-      computedProps.shoppingListItemsId = Object.keys(
-        shoppingList.shoppingListItems
-      );
-    }
-    if (sessionState.authUser !== null) {
-      computedProps.uid = sessionState.authUser.uid;
-    }
-    return computedProps;
-  }),
-  withRouter,
-  withHandlers({
-    handleSubmit: ({
-      meal,
-      dispatch,
-      shoppingListItemsId,
-      history,
-      uid
-    }) => event => {
-      event.preventDefault();
-      return dispatch(
-        addIngredientsToShoppingList(meal, shoppingListItemsId, uid, () =>
-          history.push(routes.SHOPPING_LIST)
-        )
-      );
-    }
-  })
-)(AddToShoppingListFormBase);
+  const recipeToSubmit = adjustIngredientsQuantityIfNeeded(
+    portion,
+    defaultPortionNumber,
+    ingredients,
+    recipeId,
+    title,
+    uploadImageUrl
+  );
+  const ingredientsFromRecipe = extractIngredientFromRecipeAndFormatItforBD(
+    recipeToSubmit
+  );
+  const updatedShoppingList = prepareUpdatedShoppingList(
+    shoppingList,
+    ingredientsFromRecipe,
+    recipeId,
+    recipeToSubmit
+  );
+  debugger;
+  const addRecipeIngredientsEndpoint = database.ref(`shoppingList/${uid}`);
+  const [addRecipeIngredientsInDB] = useFirebasePOSTApi(
+    addRecipeIngredientsEndpoint,
+    updatedShoppingList,
+    'UPDATE'
+  );
+
+  const onChangeHandler = event => updatePortion(event.target.value);
+
+  const handleSubmit = event => {
+    event.preventDefault();
+    addRecipeIngredientsInDB();
+    history.push(routes.SHOPPING_LIST);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <TextField
+        required
+        id="number"
+        label="Portion Number"
+        value={portion}
+        onChange={onChangeHandler}
+        type="number"
+        InputLabelProps={{
+          shrink: true
+        }}
+        margin="normal"
+      />
+      <AddToShoppingListButton
+        disabled={!uid}
+        portion={portion}
+        ingredients={ingredients}
+        defaultPortionNumber={defaultPortionNumber}
+      />
+      {!uid && <p>Please login to use the shopping list feature</p>}
+    </form>
+  );
+};
 
 //########################################################
 //                 AddToShoppingListButton
@@ -225,8 +250,14 @@ export const AddToShoppingListButton = compose(withStyles(styles))(
 //########################################################
 //                 recipeDetailCard
 //########################################################
-const RecipeDetailCardBase = ({
-  recipeDisplayed: {
+export const RecipeDetailCard = ({ match }) => {
+  const { recipes } = useContext(recipesContext);
+  const authUser = useContext(userContext);
+  const recipeDisplayed = recipes.filter(
+    recipe => recipe.recipeId === match.params.recipeId
+  )[0];
+
+  const {
     uploadImageUrl,
     title,
     canBeFrozen,
@@ -236,49 +267,43 @@ const RecipeDetailCardBase = ({
     defaultPortionNumber,
     cookingSteps,
     recipeId
-  }
-}) => (
-  <RecipeDetailCardContainer>
-    <div>
-      <HeaderImage src={uploadImageUrl} />
-    </div>
-    <RecipeDetailCardHeader
-      canBeFrozen={canBeFrozen}
-      cookingTime={cookingTime}
-      pricePerPortion={pricePerPortion}
-    />
-    <RecipeDetailCardBody>
-      <div>
-        <Typography variant="display1">{title}</Typography>
-      </div>
-      <div>
-        <Typography variant="subheading">
-          Ingredients {defaultPortionNumber}
-        </Typography>
-        <RecipeDetailIngredientList ingredients={ingredients} />
-      </div>
-      <RecipeCookingSteps cookingSteps={cookingSteps} />
-    </RecipeDetailCardBody>
-    <AddToShoppingListForm
-      defaultPortionNumber={defaultPortionNumber}
-      ingredients={ingredients}
-      title={title}
-      recipeId={recipeId}
-      uploadImageUrl={uploadImageUrl}
-    />
-  </RecipeDetailCardContainer>
-);
+  } = recipeDisplayed;
 
-export const RecipeDetailCard = compose(
-  withRecipeData,
-  connect((state, ownProps) => ({
-    recipeDisplayed: _.find(state.recipes.recipes, [
-      'recipeId',
-      ownProps.match.params.recipeId
-    ])
-  })),
-  branch(({ recipeDisplayed }) => !recipeDisplayed, renderNothing)
-)(RecipeDetailCardBase);
+  return (
+    <RecipeDetailCardContainer>
+      <div>
+        <HeaderImage src={uploadImageUrl} />
+      </div>
+      <RecipeDetailCardHeader
+        canBeFrozen={canBeFrozen}
+        cookingTime={cookingTime}
+        pricePerPortion={pricePerPortion}
+      />
+      <RecipeDetailCardBody>
+        <div>
+          <Typography variant="display1">{title}</Typography>
+        </div>
+        <div>
+          <Typography variant="subheading">
+            Ingredients {defaultPortionNumber}
+          </Typography>
+          <RecipeDetailIngredientList ingredients={ingredients} />
+        </div>
+        <RecipeCookingSteps cookingSteps={cookingSteps} />
+      </RecipeDetailCardBody>
+      {authUser ? (
+        <AddToShoppingListForm
+          defaultPortionNumber={defaultPortionNumber}
+          ingredients={ingredients}
+          title={title}
+          recipeId={recipeId}
+          uploadImageUrl={uploadImageUrl}
+          uid={authUser.uid}
+        />
+      ) : null}
+    </RecipeDetailCardContainer>
+  );
+};
 
 const RecipeDetailCardBody = styled.div`
   display: flex;
