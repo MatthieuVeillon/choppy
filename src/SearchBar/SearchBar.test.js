@@ -1,6 +1,6 @@
 import React from 'react';
 import { SearchBar } from './SearchBar';
-import { render, fireEvent } from 'react-testing-library';
+import { render, fireEvent } from '@testing-library/react';
 
 describe('SearchBar', function() {
   it('allow the user to search for a recipe', () => {

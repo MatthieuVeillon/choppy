@@ -32,7 +32,6 @@
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
-    "react-testing-library": "^8.0.1",
     "recompose": "^0.30.0",
     "redux": "^4.0.3",
     "redux-thunk": "^2.3.0",
@@ -58,6 +57,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.5.0",
     "@babel/register": "^7.4.4",
+    "@testing-library/react": "^9.1.4",
     "@testing-library/react-hooks": "^1.1.0",
     "cypress": "^3.4.0",
     "eslint-plugin-cypress": "^2.2.1",
