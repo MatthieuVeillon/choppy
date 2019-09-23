@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 import { useFirebaseGETApi } from './useFirebaseApi';
-import { database } from '../firebase';
 
 describe('useApiFirebase', function() {
   let transformedData = jest.fn(obj => obj);
@@ -18,12 +17,9 @@ describe('useApiFirebase', function() {
     const { result, waitForNextUpdate } = renderHook(() =>
       useFirebaseGETApi(endpoint, [])
     );
-
-    await waitForNextUpdate();
+    await act(async () => {
+      await waitForNextUpdate();
+    });
     expect(result.current[0]).toEqual({ recipe: 234 });
-  });
-
-  it('should transform the result of the data', function() {
-    transformedData = jest.fn(obj => obj);
   });
 });
