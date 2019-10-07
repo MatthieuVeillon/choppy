@@ -1,17 +1,23 @@
-import React, { useState, useContext } from 'react';
+import { Button, Input, Select } from 'antd';
+import 'antd/dist/antd.css';
+import _ from 'lodash';
+import React, { useContext, useState } from 'react';
 import { withRouter } from 'react-router-dom';
-import { recipesContext } from '../Context/RecipesContext';
 import { compose } from 'recompose';
+import styled from 'styled-components';
 import uuid from 'uuid/v4';
-import { Box, Button, FormField } from '../BasicComponents/Box';
-import { Form } from '../BasicComponents/Form';
+import { Box, FormField } from '../BasicComponents/Box';
 import { CheckboxSlider } from '../CheckboxSlider';
+import { recipesContext } from '../Context/RecipesContext';
 import { database } from '../firebase';
 import { storageRef } from '../firebase/index';
 import { CookingStepField } from '../FormInput/CookingStepField';
 import { ImageInput } from '../FormInput/ImageInput';
 import { IngredientField } from '../FormInput/IngredientField';
 import { useFirebasePOSTApi } from '../Recipe/useFirebaseApi';
+
+const InputGroup = Input.Group;
+const { Option } = Select;
 
 const initialState = {
   title: '',
@@ -36,7 +42,8 @@ const addIdToRecipeAndIngredients = (recipe, key) => {
   });
   return recipe;
 };
-const AddRecipeFormBase = props => {
+
+const AddRecipeFormBase = ({ history, form }) => {
   const [newRecipe, setNewRecipe] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const { setRecipes } = useContext(recipesContext);
@@ -45,15 +52,20 @@ const AddRecipeFormBase = props => {
   const key = database.ref('/recipes/').push().key;
   const endpoint = database.ref('/recipes/' + key);
   const recipeWithId = addIdToRecipeAndIngredients(newRecipe, key);
-  debugger;
   const [postNewRecipe] = useFirebasePOSTApi(endpoint, recipeWithId);
 
   const handleSubmit = event => {
-    postNewRecipe();
-    setRecipes(prevState => prevState.concat(newRecipe));
-    props.history.push('/');
     event.preventDefault();
+    form.validateFields((err, values) => {
+      if (!err) {
+        console.log('Received values of form: ', values);
+        postNewRecipe();
+        setRecipes(prevState => prevState.concat(newRecipe));
+        history.push('/');
+      }
+    });
   };
+
   const handleChange = event => {
     const target = event.target;
     setNewRecipe(prevState => ({
@@ -85,7 +97,7 @@ const AddRecipeFormBase = props => {
   const handleChangeInDynamicElement = (event, index, name, arrayToMap) => {
     const newItems = newRecipe[arrayToMap].map((item, secondIndex) => {
       if (index !== secondIndex) return item;
-      return { ...item, [name]: event.target.value };
+      return { ...item, [name]: _.get(event, 'target.value') || event };
     });
     setNewRecipe(prevState => {
       return { ...prevState, [arrayToMap]: newItems };
@@ -127,52 +139,45 @@ const AddRecipeFormBase = props => {
   } = newRecipe;
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <FormField
+    <form style={{ margin: '5px' }} onSubmit={handleSubmit}>
+      <Input
         type="text"
         value={title}
-        onChange={handleChange}
+        placeholder="title"
         id="title"
-        placeholder={'title'}
-        required
-        width="250px"
+        onChange={handleChange}
       />
 
-      {newRecipe.ingredients.map((ingredient, index) => (
-        <IngredientField
-          key={index}
-          ingredient={ingredient}
-          index={index}
-          handleChangeInDynamicElement={handleChangeInDynamicElement}
-          handleRemoveItem={handleRemoveItem}
-        />
-      ))}
+      <IngredientsList>
+        {newRecipe.ingredients.map((ingredient, index) => (
+          <IngredientField
+            key={index}
+            ingredient={ingredient}
+            index={index}
+            handleChangeInDynamicElement={handleChangeInDynamicElement}
+            handleRemoveItem={handleRemoveItem}
+          />
+        ))}
+      </IngredientsList>
 
-      <button
-        type="button"
-        onClick={() => handleAddItem('ingredients')}
-        className="small"
-      >
+      <Button size="small" onClick={() => handleAddItem('ingredients')}>
         Add Ingredient
-      </button>
+      </Button>
 
-      {newRecipe.cookingSteps.map((step, index) => (
-        <CookingStepField
-          key={index}
-          step={step}
-          index={index}
-          handleChangeInDynamicElement={handleChangeInDynamicElement}
-          handleRemoveItem={handleRemoveItem}
-        />
-      ))}
-
-      <button
-        type="button"
-        onClick={() => handleAddItem('cookingSteps')}
-        className="small"
-      >
+      <CookingStepFieldsList>
+        {newRecipe.cookingSteps.map((step, index) => (
+          <CookingStepField
+            key={index}
+            step={step}
+            index={index}
+            handleChangeInDynamicElement={handleChangeInDynamicElement}
+            handleRemoveItem={handleRemoveItem}
+          />
+        ))}
+      </CookingStepFieldsList>
+      <Button size="small" onClick={() => handleAddItem('cookingSteps')}>
         Add Step
-      </button>
+      </Button>
 
       <FormField
         top="8px"
@@ -193,7 +198,6 @@ const AddRecipeFormBase = props => {
         placeholder={'price per portion'}
         required
       />
-
       <FormField
         top="8px"
         type="number"
@@ -203,7 +207,6 @@ const AddRecipeFormBase = props => {
         placeholder="number of portion"
         required
       />
-
       <Box top="8px" width="300px" spaceBetween>
         <CheckboxSlider
           name="canBeFrozen"
@@ -225,19 +228,33 @@ const AddRecipeFormBase = props => {
           value={healthy}
         />
       </Box>
-
       <ImageInput
         name="picture: "
         onChange={handleFile}
         required
         isLoading={isLoading}
       />
-
-      <Button primary disabled={isLoading} type="submit" top="10px">
+      <Button type="primary" disabled={isLoading} type="submit" top="10px">
         SUBMIT RECIPE
       </Button>
-    </Form>
+    </form>
   );
 };
+
+const IngredientsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5px 0px 5px 0px;
+`;
+
+const CookingStepFieldsList = styled(IngredientsList)``;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin: 5px;
+`;
 
 export const AddRecipeForm = compose(withRouter)(AddRecipeFormBase);

@@ -1,48 +1,72 @@
-import React from "react";
-import "../IngredientInput.css";
-import { Box, FormField, Select } from "../BasicComponents/Box";
+import { Button, Input, Select } from 'antd';
+import React from 'react';
+import styled from 'styled-components';
+import '../IngredientInput.css';
 
-export const IngredientField = ({ ingredient, index, handleChangeInDynamicElement, handleRemoveItem }) => (
-  <Box top="10px" bottom="5px" width="250px">
-    <FormField
-      grow="1"
-      placeholder={`Ingredient ${index + 1}`}
+const { Option } = Select;
+
+export const IngredientField = ({
+  ingredient,
+  index,
+  handleChangeInDynamicElement,
+  handleRemoveItem
+}) => (
+  <IngredientContainer>
+    <Input
       type="text"
-      onChange={event => handleChangeInDynamicElement(event, index, "name", "ingredients")}
+      placeholder={`Ingredient ${index + 1}`}
       value={ingredient.name}
+      onChange={event =>
+        handleChangeInDynamicElement(event, index, 'name', 'ingredients')
+      }
+      style={{ width: '55%', marginRight: '1%' }}
       required
     />
-    <FormField
-      grow="2"
-      placeholder={`qty`}
-      width="20px"
+
+    <Input
       type="number"
-      onChange={event => handleChangeInDynamicElement(event, index, "quantity", "ingredients")}
+      placeholder={`qty`}
       value={ingredient.quantity}
+      onChange={event =>
+        handleChangeInDynamicElement(event, index, 'quantity', 'ingredients')
+      }
       min={1}
       required
+      style={{ width: '15%', marginRight: '1%' }}
     />
+
     <Select
-      style={selectStyle}
       value={ingredient.measure}
-      onChange={event => handleChangeInDynamicElement(event, index, "measure", "ingredients")}
-      required
+      style={{ width: '20%', marginRight: '1%' }}
+      onChange={event =>
+        handleChangeInDynamicElement(event, index, 'measure', 'ingredients')
+      }
     >
-      <option value="g" defaultValue>
-        g
-      </option>
-      <option value="l">cl</option>
-      <option value="cup">cup</option>
-      <option value="piece">piece</option>
+      <Option value="g">g</Option>
+      <Option value="cl">cl</Option>
+      <Option value="cup">cup</Option>
+      <Option value="piece">piece</Option>
     </Select>
 
     {index !== 0 && (
-      <button type="button" onClick={() => handleRemoveItem(index, "ingredients")}>
-        -
-      </button>
+      <Button
+        size="small"
+        type="primary"
+        onClick={() => handleRemoveItem(index, 'ingredients')}
+        shape="circle"
+        icon="minus"
+      />
     )}
-  </Box>
+  </IngredientContainer>
 );
 const selectStyle = {
-  height: "39px"
+  height: '39px'
 };
+
+const IngredientContainer = styled.div`
+  display: flex;
+  max-width: 400px;
+  justify-content: start;
+  align-items: center;
+  margin: 5px 0px 5px 0px;
+`;
