@@ -11,7 +11,7 @@ export const CookingStepField = ({
   handleChangeInDynamicElement,
   handleRemoveItem
 }) => (
-  <CookingStepFieldsList>
+  <CookingStepContainer>
     <TextArea
       placeholder={`Step ${index + 1}`}
       onChange={event =>
@@ -20,7 +20,7 @@ export const CookingStepField = ({
       value={step.name}
       required
       autosize
-      style={{ width: '92%', marginRight: '1%' }}
+      style={{ marginRight: `${index === 0 ? '' : '1%'}` }}
     />
     {index !== 0 && (
       <Button
@@ -31,13 +31,13 @@ export const CookingStepField = ({
         icon="minus"
       />
     )}
-  </CookingStepFieldsList>
+  </CookingStepContainer>
 );
 
-const CookingStepFieldsList = styled.div`
+const CookingStepContainer = styled.div`
   display: flex;
-  max-width: 400px;
+  minwidth: '100%';
   justify-content: start;
   align-items: center;
-  margin: 5px 0px 5px 0px;
+  margin: 3px 0px 3px 0px;
 `;

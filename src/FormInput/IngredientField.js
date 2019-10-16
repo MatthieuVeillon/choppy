@@ -14,12 +14,13 @@ export const IngredientField = ({
   <IngredientContainer>
     <Input
       type="text"
-      placeholder={`Ingredient ${index + 1}`}
+      placeholder={`Ingredient${index + 1}`}
+      id={`Ingredient ${index + 1}`}
       value={ingredient.name}
       onChange={event =>
         handleChangeInDynamicElement(event, index, 'name', 'ingredients')
       }
-      style={{ width: '55%', marginRight: '1%' }}
+      style={{ marginRight: '1%' }}
       required
     />
 
@@ -37,7 +38,7 @@ export const IngredientField = ({
 
     <Select
       value={ingredient.measure}
-      style={{ width: '20%', marginRight: '1%' }}
+      style={{ width: '30%', marginRight: `${index === 0 ? '' : '1%'}` }}
       onChange={event =>
         handleChangeInDynamicElement(event, index, 'measure', 'ingredients')
       }
@@ -59,14 +60,10 @@ export const IngredientField = ({
     )}
   </IngredientContainer>
 );
-const selectStyle = {
-  height: '39px'
-};
 
 const IngredientContainer = styled.div`
   display: flex;
-  max-width: 400px;
   justify-content: start;
-  align-items: center;
+  align-items: flex-end;
   margin: 5px 0px 5px 0px;
 `;

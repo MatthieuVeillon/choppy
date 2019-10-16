@@ -1,13 +1,12 @@
-import { Button, Input, Select } from 'antd';
+import { Button, Checkbox, Input } from 'antd';
 import 'antd/dist/antd.css';
 import _ from 'lodash';
 import React, { useContext, useState } from 'react';
 import { withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router';
 import { compose } from 'recompose';
 import styled from 'styled-components';
 import uuid from 'uuid/v4';
-import { Box, FormField } from '../BasicComponents/Box';
-import { CheckboxSlider } from '../CheckboxSlider';
 import { recipesContext } from '../Context/RecipesContext';
 import { database } from '../firebase';
 import { storageRef } from '../firebase/index';
@@ -15,9 +14,6 @@ import { CookingStepField } from '../FormInput/CookingStepField';
 import { ImageInput } from '../FormInput/ImageInput';
 import { IngredientField } from '../FormInput/IngredientField';
 import { useFirebasePOSTApi } from '../Recipe/useFirebaseApi';
-
-const InputGroup = Input.Group;
-const { Option } = Select;
 
 const initialState = {
   title: '',
@@ -43,10 +39,11 @@ const addIdToRecipeAndIngredients = (recipe, key) => {
   return recipe;
 };
 
-const AddRecipeFormBase = ({ history, form }) => {
+const AddRecipeFormBase = () => {
   const [newRecipe, setNewRecipe] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const { setRecipes } = useContext(recipesContext);
+  const history = useHistory();
 
   //setup to post recipe on firebase
   const key = database.ref('/recipes/').push().key;
@@ -56,14 +53,10 @@ const AddRecipeFormBase = ({ history, form }) => {
 
   const handleSubmit = event => {
     event.preventDefault();
-    form.validateFields((err, values) => {
-      if (!err) {
-        console.log('Received values of form: ', values);
-        postNewRecipe();
-        setRecipes(prevState => prevState.concat(newRecipe));
-        history.push('/');
-      }
-    });
+    postNewRecipe();
+    setRecipes(prevState => prevState.concat(newRecipe));
+    history.push('/');
+    event.preventDefault();
   };
 
   const handleChange = event => {
@@ -73,6 +66,7 @@ const AddRecipeFormBase = ({ history, form }) => {
       [target.id]: target.type === 'checkbox' ? target.checked : target.value
     }));
   };
+
   const handleFile = event => {
     const file = event.target.files[0];
     if (!file) return;
@@ -139,122 +133,156 @@ const AddRecipeFormBase = ({ history, form }) => {
   } = newRecipe;
 
   return (
-    <form style={{ margin: '5px' }} onSubmit={handleSubmit}>
-      <Input
-        type="text"
-        value={title}
-        placeholder="title"
-        id="title"
-        onChange={handleChange}
-      />
-
-      <IngredientsList>
-        {newRecipe.ingredients.map((ingredient, index) => (
-          <IngredientField
-            key={index}
-            ingredient={ingredient}
-            index={index}
-            handleChangeInDynamicElement={handleChangeInDynamicElement}
-            handleRemoveItem={handleRemoveItem}
+    <FormContainer>
+      <Form onSubmit={handleSubmit}>
+        <label>
+          Recipe title:
+          <Input
+            type="text"
+            value={title}
+            placeholder="title"
+            id="title"
+            onChange={handleChange}
           />
-        ))}
-      </IngredientsList>
+        </label>
 
-      <Button size="small" onClick={() => handleAddItem('ingredients')}>
-        Add Ingredient
-      </Button>
+        <ItemsList>
+          Ingredients :
+          {newRecipe.ingredients.map((ingredient, index) => (
+            <IngredientField
+              key={index}
+              ingredient={ingredient}
+              index={index}
+              handleChangeInDynamicElement={handleChangeInDynamicElement}
+              handleRemoveItem={handleRemoveItem}
+            />
+          ))}
+          <Button
+            style={{ width: '30%' }}
+            size="small"
+            onClick={() => handleAddItem('ingredients')}
+          >
+            Add Ingredient
+          </Button>
+        </ItemsList>
 
-      <CookingStepFieldsList>
-        {newRecipe.cookingSteps.map((step, index) => (
-          <CookingStepField
-            key={index}
-            step={step}
-            index={index}
-            handleChangeInDynamicElement={handleChangeInDynamicElement}
-            handleRemoveItem={handleRemoveItem}
+        <ItemsList>
+          Cooking Steps :
+          {newRecipe.cookingSteps.map((step, index) => (
+            <CookingStepField
+              key={index}
+              step={step}
+              index={index}
+              handleChangeInDynamicElement={handleChangeInDynamicElement}
+              handleRemoveItem={handleRemoveItem}
+            />
+          ))}
+          <Button
+            style={{ width: '30%' }}
+            size="small"
+            onClick={() => handleAddItem('cookingSteps')}
+          >
+            Add Step
+          </Button>
+        </ItemsList>
+        <div style={{ marginBottom: '5px' }}>
+          <label>
+            Cooking time :
+            <Input
+              type="number"
+              placeholder="in min"
+              id={'cookingTime'}
+              value={cookingTime}
+              onChange={handleChange}
+              min={1}
+              required
+              style={{ width: '30%', marginLeft: '1%' }}
+            />
+          </label>
+        </div>
+        <div style={{ marginBottom: '5px' }}>
+          <label>
+            Price per portion :
+            <Input
+              type="number"
+              id={'pricePerPortion'}
+              value={pricePerPortion}
+              onChange={handleChange}
+              min={1}
+              style={{ width: '30%', marginLeft: '1%' }}
+              required
+            />
+          </label>
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label htmlFor={'nb of portions'}>Number of portions :</label>
+          <Input
+            type="number"
+            placeholder="nb of portions"
+            id={'nb of portions'}
+            value={defaultPortionNumber}
+            onChange={handleChange}
+            min={1}
+            style={{ width: '30%', marginLeft: '1%' }}
+            required
           />
-        ))}
-      </CookingStepFieldsList>
-      <Button size="small" onClick={() => handleAddItem('cookingSteps')}>
-        Add Step
-      </Button>
-
-      <FormField
-        top="8px"
-        type="number"
-        value={cookingTime}
-        onChange={handleChange}
-        id="cookingTime"
-        placeholder={'cooking time in min'}
-        required
-      />
-
-      <FormField
-        top="8px"
-        type="number"
-        value={pricePerPortion}
-        onChange={handleChange}
-        id="pricePerPortion"
-        placeholder={'price per portion'}
-        required
-      />
-      <FormField
-        top="8px"
-        type="number"
-        value={defaultPortionNumber}
-        onChange={handleChange}
-        id="defaultPortionNumber"
-        placeholder="number of portion"
-        required
-      />
-      <Box top="8px" width="300px" spaceBetween>
-        <CheckboxSlider
-          name="canBeFrozen"
-          onChange={handleChange}
-          value={canBeFrozen}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Checkbox onChange={handleChange} value={canBeFrozen}>
+            can be frozen
+          </Checkbox>
+          <Checkbox
+            onChange={event =>
+              handleChangeInNestedState(event, 'categories', 'vegan')
+            }
+            value={vegan}
+          >
+            vegan
+          </Checkbox>
+          <Checkbox
+            onChange={event =>
+              handleChangeInNestedState(event, 'categories', 'healthy')
+            }
+            value={healthy}
+          >
+            healthy
+          </Checkbox>
+        </div>
+        <ImageInput
+          name="picture: "
+          onChange={handleFile}
+          required
+          isLoading={isLoading}
         />
-        <CheckboxSlider
-          name="Vegan"
-          onChange={event =>
-            handleChangeInNestedState(event, 'categories', 'vegan')
-          }
-          value={vegan}
-        />
-        <CheckboxSlider
-          name="Healthy"
-          onChange={event =>
-            handleChangeInNestedState(event, 'categories', 'healthy')
-          }
-          value={healthy}
-        />
-      </Box>
-      <ImageInput
-        name="picture: "
-        onChange={handleFile}
-        required
-        isLoading={isLoading}
-      />
-      <Button type="primary" disabled={isLoading} type="submit" top="10px">
-        SUBMIT RECIPE
-      </Button>
-    </form>
+        <Button disabled={isLoading} type="submit" top="10px">
+          SUBMIT RECIPE
+        </Button>
+      </Form>
+    </FormContainer>
   );
 };
 
-const IngredientsList = styled.div`
+const ItemsList = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 5px 0px 5px 0px;
+  margin-bottom: 5px;
+  width: 100%;
 `;
-
-const CookingStepFieldsList = styled(IngredientsList)``;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  margin: 5px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: auto;
 `;
 
+const FormContainer = styled.div`
+  margin: auto;
+  max-width: 500px;
+  padding: 5px;
+`;
 export const AddRecipeForm = compose(withRouter)(AddRecipeFormBase);

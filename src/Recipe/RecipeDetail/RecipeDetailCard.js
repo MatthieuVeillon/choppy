@@ -5,7 +5,6 @@ import _ from 'lodash';
 import React, { useContext, useState } from 'react';
 import { compose } from 'recompose';
 import styled from 'styled-components';
-import useReactRouter from 'use-react-router';
 import { Box, Button } from '../../BasicComponents/Box';
 import { recipesContext } from '../../Context/RecipesContext';
 import { userContext } from '../../Context/UserContext';
@@ -13,6 +12,7 @@ import { database } from '../../firebase';
 import { useShoppingListItems } from '../../ShoppingList/ShoppingList';
 import { useFirebasePOSTApi } from '../useFirebaseApi';
 import * as routes from '../../constants/routes';
+import { useHistory } from 'react-router';
 
 //########################################################
 //                 ipeDetailCardHeader
@@ -160,8 +160,7 @@ export const AddToShoppingListForm = ({
 }) => {
   const [portion, updatePortion] = useState(defaultPortionNumber);
   const [shoppingList] = useShoppingListItems(uid);
-  const { history } = useReactRouter();
-
+  const history = useHistory();
   const recipeToSubmit = adjustIngredientsQuantityIfNeeded(
     portion,
     defaultPortionNumber,

@@ -1,5 +1,9 @@
 {
   "extends": "react-app",
-  "plugins": ["eslint-plugin-cypress"],
-  "env": { "cypress/global": true }
+  "plugins": [
+    "eslint-plugin-cypress"
+  ],
+  "env": {
+    "cypress/global": true
+  }
 }
