@@ -64,6 +64,6 @@ export const IngredientField = ({
 const IngredientContainer = styled.div`
   display: flex;
   justify-content: start;
-  align-items: flex-end;
+  align-items: center;
   margin: 5px 0px 5px 0px;
 `;
