@@ -1,42 +1,53 @@
-import { cyan } from "@material-ui/core/colors";
-
 describe("AddRecipe", () => {
   const user = cy;
+
+  beforeEach(() => {
+    user.login();
+  });
 
   it("should be able to add a recipe with all the fields", () => {
     user
       .visit("add-recipe")
       .getByPlaceholderText("title")
-      .type("escalope de veau à la crème")
-      .getByPlaceholderText("Ingredient 1")
+      .type("escalope de veau à la crème");
+
+    cy.get("[data-cy=Ingredient0]").as("Ingredient1");
+
+    cy.get("@Ingredient1")
+      .getByPlaceholderText("Ingredient1")
       .type("escalope")
-      .get(":nth-child(2) > .bQMtcm")
-      .type("1000")
-      .getByText("Add Ingredient")
-      .click()
-      .getByPlaceholderText("Ingredient 2")
+      .getByPlaceholderText("qty")
+      .type("1000");
+
+    cy.get("[data-cy=addIngredient]").click();
+
+    cy.get("[data-cy=Ingredient1]").as("Ingredient2");
+
+    cy.get("@Ingredient2")
+      .getByPlaceholderText("Ingredient2")
       .type("champignons")
-      .get(":nth-child(3) > .bQMtcm")
-      .type("200ª")
-      .getByPlaceholderText("Step 1")
-      .type("couper les champignons")
-      .getByText("Add Step")
-      .click()
-      .getByPlaceholderText("Step 2")
+      .get('[data-cy=Ingredient1] > [type="number"]')
+      .type("200");
+
+    cy.getByPlaceholderText("Step 1").type("couper les champignons");
+
+    cy.get("[data-cy=addStep]").click();
+
+    cy.getByPlaceholderText("Step 2")
       .type("cuire les champignons")
-      .getByPlaceholderText("cooking time in min")
+      .get("[data-cy=cookingTime]")
       .type("4")
-      .getByPlaceholderText("price per portion")
+      .get("[data-cy=pricePerPortion]")
       .type("10")
-      .getByPlaceholderText("number of portion")
+      .get("[data-cy=portionNumber]")
       .type("3")
-      .get("#Vegan")
+      .get("[data-cy=vegan]")
       .click();
 
     const mimeType = "image/jpeg";
     const filename = "recipePicture.jpeg";
 
-    cy.get(".sc-bZQynM > input").then(subject => {
+    cy.get("[data-cy=pictureUpload]").then(subject => {
       return cy
         .fixture(filename, "base64")
         .then(Cypress.Blob.base64StringToBlob)
@@ -51,6 +62,6 @@ describe("AddRecipe", () => {
         })
         .then(_ => cy.wait(3000));
     });
-    user.getByText("SUBMIT RECIPE").click();
+    cy.get("[data-cy=submit]").click();
   });
 });

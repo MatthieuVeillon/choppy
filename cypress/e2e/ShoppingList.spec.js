@@ -6,7 +6,7 @@ describe("ShoppingList", () => {
 
   beforeEach(() => {
     user.login();
-    user.resetShoppingList();
+    //  user.resetShoppingList();
   });
 
   it("should show an empty shoppingList when user has not yet added an item", () => {
@@ -16,16 +16,16 @@ describe("ShoppingList", () => {
       .should("be.empty");
   });
 
-  it("should cross an ingredient when the user click on it", () => {
+  it.only("should cross an ingredient when the user click on it", () => {
     const recipeId = uuid();
     addRecipeInShoppingList(recipeId);
 
     user
       .visit("shopping-list")
-      .get(":nth-child(1) > .ipQTQY")
-      .get(".eoDEUo")
-      .click()
-      .should("have.css", "text-decoration", "line-through solid rgb(211, 211, 211)");
+      .get("[data-cy=pate] > .gWNlJm")
+      .click();
+
+    cy.get("[data-cy=pate]").should("have.css", "background-color:", "WhiteSmoke");
   });
 
   it("should be able to add a custom ingredient", () => {

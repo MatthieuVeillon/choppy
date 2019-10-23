@@ -11,7 +11,7 @@ export const IngredientField = ({
   handleChangeInDynamicElement,
   handleRemoveItem
 }) => (
-  <IngredientContainer>
+  <IngredientContainer data-cy={`Ingredient${index}`}>
     <Input
       type="text"
       placeholder={`Ingredient${index + 1}`}
@@ -37,6 +37,7 @@ export const IngredientField = ({
     />
 
     <Select
+      defaultValue="g"
       value={ingredient.measure}
       style={{ width: '30%', marginRight: `${index === 0 ? '' : '1%'}` }}
       onChange={event =>

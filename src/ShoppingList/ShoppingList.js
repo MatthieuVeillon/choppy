@@ -86,6 +86,7 @@ export const ShoppingListItem = ({
     <Draggable key={ingredientId} draggableId={ingredientId} index={index}>
       {(provided, snapshot) => (
         <ShoppingListItemWrapper
+          data-cy={`${ingredient.name}`}
           spaceBetween
           height={'40px'}
           purchased={purchased}
@@ -134,7 +135,6 @@ const ShoppingListItemWrapper = styled(Box)`
 
 export const ShoppingListRecipeCard = ({
   recipe,
-  onRemoveHandler,
   userId,
   shoppingList,
   setShoppingList
@@ -246,19 +246,17 @@ const RecipeList = ({ shoppingList, userId, setShoppingList }) => {
 export const transformDataForShoppingList = rawData => {
   const transformedData = {};
 
-  const shoppingListItems = _.get(rawData, 'shoppingListItems')
+  transformedData.shoppingListItems = _.get(rawData, 'shoppingListItems')
     ? Object.keys(rawData.shoppingListItems).map(item => {
         return rawData.shoppingListItems[item];
       })
     : [];
-  transformedData.shoppingListItems = shoppingListItems;
 
-  const shoppingListRecipes = _.get(rawData, 'shoppingListRecipes')
+  transformedData.shoppingListRecipes = _.get(rawData, 'shoppingListRecipes')
     ? Object.keys(rawData.shoppingListRecipes).map(
         recipe => rawData.shoppingListRecipes[recipe]
       )
     : [];
-  transformedData.shoppingListRecipes = shoppingListRecipes;
 
   transformedData.shoppingListItemsId = _.get(rawData, 'shoppingListItems')
     ? rawData.shoppingListItemsId
@@ -351,6 +349,7 @@ export const ShoppingList = ({ authUser }) => {
                   );
                   return (
                     <ShoppingListItem
+                      data-cy={`${ingredient.name}`}
                       key={ingredient.ingredientId}
                       ingredient={ingredient}
                       setShoppingList={setShoppingList}

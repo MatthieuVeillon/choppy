@@ -1,4 +1,4 @@
-import { addRecipeInShoppingList, addRecipe, removeRecipe } from "./utils";
+import { addRecipe, removeRecipe } from "./utils";
 import uuid from "uuid/v4";
 
 describe("Home", () => {
@@ -14,15 +14,15 @@ describe("Home", () => {
   });
 
   it("should display recipes", () => {
-    user.visit("/").getByText("veau patate");
+    user.visit("/").getByText("gratin dauphinois test");
   });
 
   it("should redirect the user to right page when he clicks on a specific recipe", () => {
     user
       .visit("/")
-      .getByText("veau patate")
+      .getByText("gratin dauphinois test")
       .click()
-      .getByText("veau patate");
+      .getByText("gratin dauphinois test");
   });
 
   it("should filter out the recipes based on their categories", () => {

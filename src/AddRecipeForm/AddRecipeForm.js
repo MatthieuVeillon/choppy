@@ -156,6 +156,7 @@ const AddRecipeFormBase = () => {
             />
           ))}
           <Button
+            data-cy="addIngredient"
             style={{ width: '30%' }}
             size="small"
             onClick={() => handleAddItem('ingredients')}
@@ -175,6 +176,7 @@ const AddRecipeFormBase = () => {
             />
           ))}
           <Button
+            data-cy="addStep"
             style={{ width: '30%' }}
             size="small"
             onClick={() => handleAddItem('cookingSteps')}
@@ -186,6 +188,7 @@ const AddRecipeFormBase = () => {
           <label>
             Cooking time :
             <Input
+              data-cy="cookingTime"
               type="number"
               placeholder="in min"
               id={'cookingTime'}
@@ -202,6 +205,7 @@ const AddRecipeFormBase = () => {
             Price per portion :
             <Input
               type="number"
+              data-cy="pricePerPortion"
               id={'pricePerPortion'}
               value={pricePerPortion}
               onChange={handleChange}
@@ -216,6 +220,7 @@ const AddRecipeFormBase = () => {
             Number of portions :
             <Input
               type="number"
+              data-cy="portionNumber"
               placeholder="nb of portions"
               id={'defaultPortionNumber'}
               value={defaultPortionNumber}
@@ -237,6 +242,7 @@ const AddRecipeFormBase = () => {
             can be frozen
           </Checkbox>
           <Checkbox
+            data-cy="vegan"
             checked={vegan}
             onChange={event =>
               handleChangeInNestedState(event, 'categories', 'vegan')
@@ -257,6 +263,7 @@ const AddRecipeFormBase = () => {
           <label>
             File :{' '}
             <input
+              data-cy="pictureUpload"
               type="file"
               onChange={handleFile}
               required
@@ -266,6 +273,7 @@ const AddRecipeFormBase = () => {
           {isLoading && <span>currenlty loading</span>}
         </div>
         <Button
+          data-cy="submit"
           style={{ alignSelf: 'center' }}
           disabled={isLoading}
           type="primary"

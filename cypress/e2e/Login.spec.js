@@ -1,5 +1,3 @@
-import { auth } from "../../src/firebase/firebase";
-
 describe("Login", () => {
   const user = cy;
 
