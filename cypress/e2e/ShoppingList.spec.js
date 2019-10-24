@@ -16,16 +16,15 @@ describe("ShoppingList", () => {
       .should("be.empty");
   });
 
-  it.only("should cross an ingredient when the user click on it", () => {
+  it("should cross an ingredient when the user click on it", () => {
     const recipeId = uuid();
     addRecipeInShoppingList(recipeId);
 
     user
       .visit("shopping-list")
-      .get("[data-cy=pate] > .gWNlJm")
+      .getByText("pate")
       .click();
-
-    cy.get("[data-cy=pate]").should("have.css", "background-color:", "WhiteSmoke");
+    cy.get("[data-cy=pate]").should("have.css", "text-decoration", "line-through solid rgb(211, 211, 211)");
   });
 
   it("should be able to add a custom ingredient", () => {

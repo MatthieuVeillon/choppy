@@ -178,7 +178,6 @@ export const AddToShoppingListForm = ({
     recipeId,
     recipeToSubmit
   );
-  debugger;
   const addRecipeIngredientsEndpoint = database.ref(`shoppingList/${uid}`);
   const [addRecipeIngredientsInDB] = useFirebasePOSTApi(
     addRecipeIngredientsEndpoint,
